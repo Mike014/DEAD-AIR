@@ -6,6 +6,8 @@
 **Engine**: Unity 2021 LTS+
 **Durata Demo**: 15-20 minuti (4-5 chiamate)
 
+![Copertina del progetto](Gemini_Generated_Image_p2cpe0p2cpe0p2cp.png)
+
 ---
 
 ## 1. HIGH CONCEPT
