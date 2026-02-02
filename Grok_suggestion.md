@@ -98,3 +98,112 @@ mixer.SetFloat("DistortionAmount", entityIrritationLevel);
 ```
 
 ---
+
+riutilizza il TemporalController come cervello decisionale, ma elimina/scardina la parte LLM e trasformala in un dispatcher di azioni non-verbali. È la mossa perfetta – mantieni tutta la sofisticazione temporale (che è il tuo vero superpotere) e la pieghi al design audio-first di Dead Air.
+Passo-passo: Come adattare EntitySystem a Dead Air
+
+Mantieni intatto il TemporalController
+È il gioiello. La sua ShouldSpeak() (che rinomineremo ShouldAct()) decide perfettamente quando l’ENTITÀ deve “risvegliarsi”.
+Input: tension (dal progresso chiamata + scelte player)
+Input: silenceSec (tempo dall’ultima azione dell’ENTITÀ)
+Output: probabilità dinamica con EMA, emotion bias, cooldown, rate limiting → esattamente ciò che vuoi per la tensione parallela.
+
+Rimuovi o disabilita la parte Groq/LLM
+In Dead Air non serve testo generato.
+Opzione pulita: Crea una subclass di EntityBrain chiamata DeadAirEntityBrain.
+Sovrascrivi QueryCoroutine: quando ShouldSpeak() ritorna true → non chiamare Groq, ma dispatcha un evento custom OnEntityAct.
+Rimuovi GroqClient dependency o mettila sotto #if USE_LLM.
+
+Crea un sistema di azioni non-verbali (Action Pool)
+Sostituisci OnEntitySpeak(string text) con un pool di azioni pesate per emozione e tensione.
+
+C#public class DeadAirEntityBrain : EntityBrain
+{
+    [Header("Dead Air Actions")]
+    [SerializeField] private EntityActionSet[] actionSets; // ScriptableObject per emozione
+
+    public UnityEvent<EntityAction> OnEntityAct; // Nuova event
+
+    private IEnumerator QueryCoroutine(string context, float tension, float? silenceSec)
+    {
+        // ... stesso gate con Controller.ShouldSpeak() ...
+
+        if (!shouldSpeak)
+        {
+            OnEntitySilence?.Invoke();
+            yield break;
+        }
+
+        // Invece di Groq → scegli e triggera azione
+        EntityAction chosen = ChooseAction(tension, CurrentEmotion);
+        if (chosen != null)
+        {
+            OnEntityAct?.Invoke(chosen);
+            // Opzionale: coroutine per sequenza timed (es. footsteps che si avvicinano)
+            StartCoroutine(chosen.Execute());
+        }
+    }
+
+    private EntityAction ChooseAction(float tension, EntityEmotion emotion)
+    {
+        var set = actionSets.FirstOrDefault(s => s.emotion == emotion);
+        if (set == null) return null;
+
+        // Weighted random basato su tension (es. alta tension → azioni aggressive)
+        float totalWeight = set.actions.Sum(a => a.GetWeight(tension));
+        float roll = Random.value * totalWeight;
+
+        foreach (var action in set.actions)
+        {
+            roll -= action.GetWeight(tension);
+            if (roll <= 0) return action;
+        }
+        return null;
+    }
+}
+C#[CreateAssetMenu(menuName = "Entity/Action Set")]
+public class EntityActionSet : ScriptableObject
+{
+    public EntityEmotion emotion;
+    public EntityAction[] actions;
+}
+
+[Serializable]
+public class EntityAction
+{
+    public string name;
+    [Range(0f, 1f)] public float baseWeight = 1f;
+    public AnimationCurve weightByTension; // Es. curva che sale con tension
+
+    public float GetWeight(float tension) => baseWeight * weightByTension.Evaluate(tension);
+
+    public IEnumerator Execute()
+    {
+        // Esempio: spawn footsteps che si avvicinano
+        // O glitch UI breve
+        // O distorsione voce caller
+        yield return null;
+    }
+}
+
+Collega le azioni ai tuoi sistemi esistenti
+Spatial Audio Room: OnEntityAct → spawn oggetto sonoro dal pool (footsteps, breathing, whispers) in posizione random/diretta.
+UI Disturbances: OnEntityAct → queue glitch (CRT flicker, text appear, cursor drift).
+Call Interference: Modula mixer exposed params (static, distortion, pitch shift).
+Usa DOTween o coroutine per timing naturale (non tutto istantaneo).
+
+Bilanciamento specifico per Dead Air
+Aumenta l’influenza del silenzio prolungato (wMemory più alto).
+Per emozione Irritated: azioni multi-channel (audio + UI contemporaneamente).
+Per Bored: solo silenzio → build-up naturale.
+Usa EntityDebugUI religiosamente: osserva come cambiano EMA durante una chiamata completa.
+
+Performance & Ottimizzazioni Unity
+Il controller è leggerissimo (~0.1ms per decisione) → chiamalo ogni frame o ogni 0.5s in Update.
+Non usare Time.time se hai time scale variabile → passa custom time provider.
+Per web build: rimuovi completamente Groq (no web requests).
+
+
+Conclusione
+Con questa adattazione, il tuo EntitySystem diventa il cuore pulsante di Dead Air: un’ENTITÀ veramente imprevedibile, che “osserva” il player e sceglie quando manifestarsi. Il silenzio prolungato diventerà terrorizzante perché il player saprà che stai accumulando EMA silence → esplosione inevitabile.
+Sei a un passo da una demo che spacca. Implementa questa versione “muta” del brain, collega 4-5 azioni base (footsteps, breathing, screen flicker, static), e fai un playtest con Call 1 + Call 3.
