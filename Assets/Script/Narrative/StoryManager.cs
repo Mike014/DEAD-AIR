@@ -228,22 +228,73 @@ namespace DeadAir.Narrative
 
             Log($"Presentando {_currentChoices.Count} scelte.");
 
-            // Controlla se è una timed choice
-            // I tag della timed choice sono sulla prima scelta per convenzione
-            if (_currentChoices.Count > 0 && _currentChoices[0].tags != null)
-            {
-                var timedData = DialogueParser.ParseTimedChoiceTags(_currentChoices[0].tags);
+            // 1. PRIMA: mostra le scelte
+            NarrativeEvents.ChoicesPresented(new List<Choice>(_currentChoices));
 
-                if (timedData.IsTimedChoice)
+            // 2. POI: controlla se c'è un timer
+            foreach (var choice in _currentChoices)
+            {
+                if (choice.tags != null && choice.tags.Count > 0)
                 {
-                    Log($"  → TIMED CHOICE: {timedData.Timeout}s, default index: {timedData.DefaultIndex}");
-                    NarrativeEvents.TimedChoiceStarted(timedData.Timeout, timedData.DefaultIndex);
+                    var timedData = DialogueParser.ParseTimedChoiceTags(choice.tags);
+
+                    if (timedData.IsTimedChoice)
+                    {
+                        Log($" → TIMED CHOICE RILEVATA su scelta {choice.index}: {timedData.Timeout}s");
+
+                        NarrativeEvents.TimedChoiceStarted(timedData.Timeout, timedData.DefaultIndex);
+                        break;
+                    }
                 }
             }
-
-            // Dispatch evento scelte — passa una copia per evitare mutazione esterna
-            NarrativeEvents.ChoicesPresented(new List<Choice>(_currentChoices));
         }
+        // private void PresentChoices()
+        // {
+        //     _currentChoices.Clear();
+        //     _currentChoices.AddRange(_story.currentChoices);
+        //     _waitingForInput = false;
+        //     _waitingForChoice = true;
+
+        //     // --- LOGICA DI ESTRAZIONE TIMER ---
+        //     bool hasTimer = false;
+        //     float duration = 5f; // Default se non specificato
+        //     int defaultIndex = 0; // Scelta di default
+
+        //     foreach (var choice in _currentChoices)
+        //     {
+        //         // Controlliamo i tag interni alla scelta
+        //         if (choice.tags != null && choice.tags.Count > 0)
+        //         {
+        //             foreach (var tag in choice.tags)
+        //             {
+        //                 string t = tag.Trim().ToLower();
+
+        //                 // Usiamo i tag definiti nel tuo DialogueParser
+        //                 if (t == "timed_choice") hasTimer = true;
+
+        //                 if (t.StartsWith("timeout:"))
+        //                 {
+        //                     float.TryParse(t.Split(':')[1], out duration);
+        //                 }
+
+        //                 if (t.StartsWith("default:"))
+        //                 {
+        //                     int.TryParse(t.Split(':')[1], out defaultIndex);
+        //                 }
+        //             }
+        //         }
+        //     }
+
+        //     // 1. Notifica la UI di mostrare i bottoni
+        //     NarrativeEvents.ChoicesPresented(_currentChoices);
+
+        //     // 2. Se abbiamo trovato il tag #timed_choice, spariamo l'evento!
+        //     if (hasTimer)
+        //     {
+        //         Log($"[TIMER] Avvio countdown: {duration}s, scelta default: {defaultIndex}");
+        //         NarrativeEvents.TimedChoiceStarted(duration, defaultIndex);
+        //     }
+        // }
 
         // ============================================
         // EVENT HANDLERS

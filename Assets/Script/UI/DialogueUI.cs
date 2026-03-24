@@ -154,7 +154,8 @@ namespace DeadAir.UI
             HideContinueIndicator();
             // Pulisci il testo precedente
             if (_dialogueText != null)
-                _dialogueText.text = "";
+                // _dialogueText.text = "";
+                _dialogueText.text = "01101001 01110100 01110011 00100000 01111001 01101111 01110101 01110010 00100000 01100110 01100001 01110101 01101100 01110100";
             ShowChoices(choices);
         }
 
