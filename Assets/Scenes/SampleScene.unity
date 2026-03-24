@@ -840,7 +840,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -225.13, y: -188.53}
-  m_SizeDelta: {x: 20, y: 30}
+  m_SizeDelta: {x: 5, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &912530043
 CanvasRenderer:
@@ -863,7 +863,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.13022847, g: 0.70980394, b: 0.04018334, a: 0.5372549}
+  m_Color: {r: 0.30588236, g: 0.6627451, b: 0.12156863, a: 0.49803922}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1339,7 +1339,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _dialogueText: {fileID: 888078393}
   _continueIndicator: {fileID: 912530041}
-  _cursorOffset: {x: 8, y: 10}
+  _cursorOffset: {x: 7, y: 9}
   _narratorColor: {r: 0.087417364, g: 1, b: 0, a: 0.6392157}
   _wardColor: {r: 1, g: 0.69, b: 0, a: 1}
   _irisColor: {r: 0, g: 1, b: 0.53, a: 1}
@@ -1854,7 +1854,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2008522635
 RectTransform:
   m_ObjectHideFlags: 0

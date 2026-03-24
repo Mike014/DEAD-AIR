@@ -152,6 +152,9 @@ namespace DeadAir.UI
         {
             StopTypewriter();
             HideContinueIndicator();
+            // Pulisci il testo precedente
+            if (_dialogueText != null)
+                _dialogueText.text = "";
             ShowChoices(choices);
         }
 
