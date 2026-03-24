@@ -12,6 +12,7 @@
 // - #timed_choice triggers timer activation
 // - #timeout:4 duration in seconds
 // - #default:1 choice index if timer expires
+// - #voice:iris_XX voice clip ID
 // ============================================
 
 VAR asked_name = false
@@ -103,27 +104,27 @@ I pick up the receiver. The weight of the headset on my skull.
 
 === part_3 ===
 
-Hi... I just wanted to know if the Bear is still angry. # speaker:iris
+Hi... I just wanted to know if the Bear is still angry. # speaker:iris # voice:iris_01
 
 I blink. Another prank. Must be.
 
 Sweetie, you've got the wrong number. This line isn't for playing. # speaker:ward
 
-But the Bear is right outside the door. He told me if I talk he'll take my toys away. Are we playing the quiet game? # speaker:iris
+But the Bear is right outside the door. He told me if I talk he'll take my toys away. Are we playing the quiet game? # speaker:iris # voice:iris_02
 
 The ice in the glass. A sip. Annoyance.
 
 Listen, hand the phone to your mom or dad. Now. # speaker:ward
 
-They can't. They're sleeping on the carpet. # speaker:iris
+They can't. They're sleeping on the carpet. # speaker:iris # voice:iris_03
 
 ...
 
-There's strawberry juice everywhere... the Bear spilled it all over. # speaker:iris
+There's strawberry juice everywhere... the Bear spilled it all over. # speaker:iris # voice:iris_04
 
 ...
 
-Can I have a blanket? # speaker:iris
+Can I have a blanket? # speaker:iris # voice:iris_05
 
 -> part_4
 
@@ -154,7 +155,7 @@ The words come out crooked. The alcohol speaks for me.
 
 === part_5 ===
 
-But the Bear has my name on his list... I don't want to play anymore. # speaker:iris
+But the Bear has my name on his list... I don't want to play anymore. # speaker:iris # voice:iris_06
 
 Something breaks inside me. Not in the glass. Inside.
 
@@ -164,13 +165,13 @@ The glass falls. It shatters.
 
 Shit... listen to me. This isn't a game. You need to hide. Now. Get under the bed. Don't breathe loud. # speaker:ward
 
-He's right outside the door... he's scratching the wood. # speaker:iris
+He's right outside the door... he's scratching the wood. # speaker:iris # voice:iris_07
 
 # sfx:scratch
 
 ...
 
-I can see his shoes. They're black and shiny, like daddy's when we go to church. # speaker:iris
+I can see his shoes. They're black and shiny, like daddy's when we go to church. # speaker:iris # voice:iris_08
 
 The realization hits me like a punch.
 
@@ -209,13 +210,13 @@ I need to know who she is. I need to—
 
 What's your name? # speaker:ward
 
-Iris. # speaker:iris
+Iris. # speaker:iris # voice:iris_09
 
 # sfx:door_open
 
 The door opens. I hear it through the line.
 
-The Bear is— # speaker:iris
+The Bear is— # speaker:iris # voice:iris_10
 
 -> ending
 
@@ -233,7 +234,7 @@ The moment passes.
 
 The door opens. I hear it through the line.
 
-The Bear is— # speaker:iris
+The Bear is— # speaker:iris # voice:iris_10
 
 -> ending
 

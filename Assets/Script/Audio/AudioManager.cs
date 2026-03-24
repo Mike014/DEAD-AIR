@@ -89,11 +89,9 @@ namespace DeadAir.Audio
                 return;
             }
             Instance = this;
-            
-            // Costruisci lookup dictionaries
+            DontDestroyOnLoad(gameObject);
+
             BuildLookupTables();
-            
-            // Configura audio sources
             ConfigureAudioSources();
         }
         
@@ -173,9 +171,15 @@ namespace DeadAir.Audio
         {
             if (string.IsNullOrEmpty(sfxId))
                 return;
-            
+
+            if (_sfxSource == null)
+            {
+                Debug.LogWarning("[AudioManager] _sfxSource non assegnato nell'Inspector!");
+                return;
+            }
+
             string key = sfxId.ToLowerInvariant();
-            
+
             if (_sfxLookup.TryGetValue(key, out AudioClip clip))
             {
                 _sfxSource.PlayOneShot(clip, _sfxVolume);
@@ -198,23 +202,24 @@ namespace DeadAir.Audio
         {
             if (string.IsNullOrEmpty(ambienceId))
                 return;
-            
+
+            if (_ambienceSource == null)
+            {
+                Debug.LogWarning("[AudioManager] _ambienceSource non assegnato nell'Inspector!");
+                return;
+            }
+
             string key = ambienceId.ToLowerInvariant();
-            
+
             if (_ambienceLookup.TryGetValue(key, out AudioClip clip))
             {
-                // Ferma eventuali fade in corso
                 if (_ambienceFadeCoroutine != null)
-                {
                     StopCoroutine(_ambienceFadeCoroutine);
-                }
-                
+
                 _ambienceSource.clip = clip;
                 _ambienceSource.Play();
-                
-                // Fade in
-                _ambienceFadeCoroutine = StartCoroutine(FadeAmbience(0f, _ambienceVolume, _ambienceFadeDuration));
-                
+                _ambienceFadeCoroutine = StartCoroutine(FadeAmbienceIn(0f, _ambienceVolume, _ambienceFadeDuration));
+
                 Debug.Log($"[AudioManager] Ambience START: {ambienceId}");
             }
             else
@@ -228,18 +233,14 @@ namespace DeadAir.Audio
         /// </summary>
         public void StopAmbience()
         {
-            if (!_ambienceSource.isPlaying)
+            if (_ambienceSource == null || !_ambienceSource.isPlaying)
                 return;
-            
-            // Ferma eventuali fade in corso
+
             if (_ambienceFadeCoroutine != null)
-            {
                 StopCoroutine(_ambienceFadeCoroutine);
-            }
-            
-            // Fade out, poi stop
+
             _ambienceFadeCoroutine = StartCoroutine(FadeAmbienceAndStop(_ambienceSource.volume, 0f, _ambienceFadeDuration));
-            
+
             Debug.Log("[AudioManager] Ambience STOP");
         }
         
@@ -250,25 +251,30 @@ namespace DeadAir.Audio
         /// <summary>
         /// Fade del volume ambience.
         /// </summary>
+        private System.Collections.IEnumerator FadeAmbienceIn(float from, float to, float duration)
+        {
+            yield return FadeAmbience(from, to, duration);
+            _ambienceFadeCoroutine = null;
+        }
+
         private System.Collections.IEnumerator FadeAmbience(float from, float to, float duration)
         {
             float elapsed = 0f;
             _ambienceSource.volume = from;
-            
+
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
-                float t = elapsed / duration;
-                _ambienceSource.volume = Mathf.Lerp(from, to, t);
+                _ambienceSource.volume = Mathf.Lerp(from, to, elapsed / duration);
                 yield return null;
             }
-            
+
             _ambienceSource.volume = to;
-            _ambienceFadeCoroutine = null;
+            // Non azzera _ambienceFadeCoroutine: lo fa il chiamante
         }
-        
+
         /// <summary>
-        /// Fade out e poi stop.
+        /// Fade out e poi stop. Gestisce il lifetime di _ambienceFadeCoroutine.
         /// </summary>
         private System.Collections.IEnumerator FadeAmbienceAndStop(float from, float to, float duration)
         {
@@ -311,9 +317,9 @@ namespace DeadAir.Audio
                 StopCoroutine(_ambienceFadeCoroutine);
                 _ambienceFadeCoroutine = null;
             }
-            
-            _sfxSource.Stop();
-            _ambienceSource.Stop();
+
+            _sfxSource?.Stop();
+            _ambienceSource?.Stop();
         }
     }
 }

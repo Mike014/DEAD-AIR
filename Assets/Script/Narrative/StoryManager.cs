@@ -11,12 +11,12 @@ namespace DeadAir.Narrative
     /// Responsabilità:
     /// - Caricare e gestire la Story ink
     /// - Processare linee e tag
-    /// - Dispatchare eventi ai sistemi (Audio, UI, Timer)
+    /// - Dispatchare eventi ai sistemi (Audio, UI, Timer, Voice)
     /// - Gestire il flusso Continue/Choice
     /// 
     /// NON responsabile di:
     /// - Rendering UI (→ DialogueUI)
-    /// - Riproduzione audio (→ AudioManager)
+    /// - Riproduzione audio (→ AudioManager, VoiceManager)
     /// - Gestione timer (→ TimedChoiceHandler)
     /// </summary>
     public class StoryManager : MonoBehaviour
@@ -54,18 +54,14 @@ namespace DeadAir.Narrative
         
         private void OnEnable()
         {
-            // Iscriviti agli eventi
             NarrativeEvents.OnContinueRequested += HandleContinueRequested;
             NarrativeEvents.OnChoiceSelected += HandleChoiceSelected;
-            NarrativeEvents.OnTimedChoiceExpired += HandleTimedChoiceExpired;
         }
-        
+
         private void OnDisable()
         {
-            // Disiscrivi per evitare memory leak
             NarrativeEvents.OnContinueRequested -= HandleContinueRequested;
             NarrativeEvents.OnChoiceSelected -= HandleChoiceSelected;
-            NarrativeEvents.OnTimedChoiceExpired -= HandleTimedChoiceExpired;
         }
         
         private void Start()
@@ -88,15 +84,18 @@ namespace DeadAir.Narrative
                 Debug.LogError("[StoryManager] Ink asset non assegnato!");
                 return;
             }
-            
-            _story = new Story(_inkAsset.text);
-            
-            // Error handler per errori ink runtime
-            _story.onError += HandleInkError;
-            
-            _isInitialized = true;
-            
-            Log("Story inizializzata.");
+
+            try
+            {
+                _story = new Story(_inkAsset.text);
+                _story.onError += HandleInkError;
+                _isInitialized = true;
+                Log("Story inizializzata.");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[StoryManager] Errore inizializzazione Story: {e.Message}");
+            }
         }
         
         // ============================================
@@ -104,73 +103,66 @@ namespace DeadAir.Narrative
         // ============================================
         
         /// <summary>
-        /// Continua la storia fino alla prossima pausa (scelta o fine linea).
-        /// Processa UNA linea alla volta per permettere effetto typewriter.
+        /// Continua la storia fino alla prossima linea con testo visibile.
+        /// Le linee con soli tag (audio, UI, ambience) vengono consumate in loop
+        /// senza ricorsione — evita stack overflow su sequenze di tag consecutivi.
         /// </summary>
         private void ContinueStory()
         {
             if (!_isInitialized || _story == null)
                 return;
-            
-            // Se possiamo continuare, processa la prossima linea
-            if (_story.canContinue)
+
+            // Itera sulle linee ink: processa tag e si ferma solo su testo visibile
+            while (_story.canContinue)
             {
                 string text = _story.Continue();
-                List<string> tags = _story.currentTags;
-                
-                ProcessLine(text, tags);
-                
-                // Dopo aver processato, controlla se ci sono altre linee
-                // o se dobbiamo aspettare input
-                if (_story.canContinue)
+                bool hasVisibleText = ProcessLine(text, _story.currentTags);
+
+                if (hasVisibleText)
                 {
-                    // Ci sono altre linee — aspetta click per continuare
-                    _waitingForInput = true;
-                    _waitingForChoice = false;
+                    if (_story.canContinue)
+                    {
+                        _waitingForInput = true;
+                        _waitingForChoice = false;
+                    }
+                    else if (_story.currentChoices.Count > 0)
+                    {
+                        PresentChoices();
+                    }
+                    else
+                    {
+                        HandleStoryEnd();
+                    }
+                    return; // Aspetta che il giocatore agisca
                 }
-                else if (_story.currentChoices.Count > 0)
-                {
-                    // Ci sono scelte — presentale
-                    PresentChoices();
-                }
-                else
-                {
-                    // Fine storia
-                    HandleStoryEnd();
-                }
+                // Nessun testo: la riga aveva solo tag → loop continua
             }
-            else if (_story.currentChoices.Count > 0)
-            {
-                // Non può continuare ma ci sono scelte
+
+            // While esaurito senza testo visibile (es. fine blocco solo-tag)
+            if (_story.currentChoices.Count > 0)
                 PresentChoices();
-            }
             else
-            {
-                // Fine storia
                 HandleStoryEnd();
-            }
         }
-        
+
         /// <summary>
-        /// Processa una singola linea: parsing tag e dispatch eventi.
+        /// Processa una singola linea: dispatcha eventi audio/UI.
+        /// Restituisce true se la linea ha testo visibile da mostrare al giocatore.
         /// </summary>
-        private void ProcessLine(string text, List<string> tags)
+        private bool ProcessLine(string text, List<string> tags)
         {
-            // Parsing
             var parsed = DialogueParser.ParseTags(tags, text);
-            
-            Log($"Line: \"{parsed.Text}\" | Speaker: {parsed.Speaker ?? "none"} | Tags: {tags?.Count ?? 0}");
-            
+
+            Log($"Line: \"{parsed.Text}\" | Speaker: {parsed.Speaker ?? "none"} | Voice: {parsed.VoiceId ?? "none"} | Tags: {tags?.Count ?? 0}");
+
             // === AUDIO EVENTS ===
-            
-            // SFX
+
             if (parsed.HasSFX)
             {
                 NarrativeEvents.SFXRequested(parsed.SFX);
                 Log($"  → SFX: {parsed.SFX}");
             }
-            
-            // Ambience
+
             if (parsed.HasAmbience)
             {
                 if (parsed.IsAmbienceStop)
@@ -184,35 +176,32 @@ namespace DeadAir.Narrative
                     Log($"  → Ambience: {parsed.Ambience}");
                 }
             }
-            
+
+            if (parsed.HasVoice)
+            {
+                NarrativeEvents.VoiceRequested(parsed.VoiceId);
+                Log($"  → Voice: {parsed.VoiceId}");
+            }
+
             // === UI EVENTS ===
-            
+
             if (parsed.HasUICommand)
             {
                 NarrativeEvents.UICommand(parsed.UICommand);
                 Log($"  → UI Command: {parsed.UICommand}");
             }
-            
+
             // === DIALOGUE EVENTS ===
-            
-            // Salta linee vuote (solo tag, niente testo)
+
             if (string.IsNullOrWhiteSpace(parsed.Text))
-            {
-                // Se c'erano solo tag, continua automaticamente
-                _waitingForInput = false;
-                ContinueStory();
-                return;
-            }
-            
-            // Dispatch linea di dialogo
+                return false; // Riga solo-tag: nessun testo, il loop continua
+
             if (parsed.HasSpeaker)
-            {
                 NarrativeEvents.SpeakerLine(parsed.Speaker, parsed.Text);
-            }
             else
-            {
                 NarrativeEvents.DialogueLine(parsed.Text);
-            }
+
+            return true;
         }
         
         /// <summary>
@@ -242,8 +231,8 @@ namespace DeadAir.Narrative
                 }
             }
             
-            // Dispatch evento scelte
-            NarrativeEvents.ChoicesPresented(_currentChoices);
+            // Dispatch evento scelte — passa una copia per evitare mutazione esterna
+            NarrativeEvents.ChoicesPresented(new List<Choice>(_currentChoices));
         }
         
         // ============================================
@@ -282,17 +271,6 @@ namespace DeadAir.Narrative
             _story.ChooseChoiceIndex(index);
             
             ContinueStory();
-        }
-        
-        /// <summary>
-        /// Chiamato quando il timer di una timed choice scade.
-        /// Il TimedChoiceHandler avrà già selezionato l'indice default.
-        /// </summary>
-        private void HandleTimedChoiceExpired()
-        {
-            Log("Timed choice scaduta — gestita da TimedChoiceHandler.");
-            // Il TimedChoiceHandler chiama NarrativeEvents.ChoiceSelected(defaultIndex)
-            // che triggera HandleChoiceSelected
         }
         
         /// <summary>
@@ -338,7 +316,15 @@ namespace DeadAir.Narrative
         public T GetVariable<T>(string variableName)
         {
             if (!_isInitialized) return default;
-            return (T)_story.variablesState[variableName];
+            try
+            {
+                return (T)_story.variablesState[variableName];
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[StoryManager] GetVariable<{typeof(T).Name}>('{variableName}') failed: {e.Message}");
+                return default;
+            }
         }
         
         /// <summary>

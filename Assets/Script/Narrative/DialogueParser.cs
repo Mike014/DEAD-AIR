@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace DeadAir.Narrative
 {
@@ -9,6 +10,7 @@ namespace DeadAir.Narrative
     /// Responsabilità:
     /// - Estrarre speaker dalle linee (#speaker:ward, #speaker:iris)
     /// - Parsare tag audio (#sfx:xxx, #amb:xxx)
+    /// - Parsare tag voice (#voice:iris_01)
     /// - Parsare tag timer (#timed_choice, #timeout:x, #default:x)
     /// - Parsare tag UI (#ui:xxx)
     /// </summary>
@@ -22,6 +24,7 @@ namespace DeadAir.Narrative
         private const string TAG_SFX = "sfx:";
         private const string TAG_AMB = "amb:";
         private const string TAG_UI = "ui:";
+        private const string TAG_VOICE = "voice:";
         private const string TAG_TIMED_CHOICE = "timed_choice";
         private const string TAG_TIMEOUT = "timeout:";
         private const string TAG_DEFAULT = "default:";
@@ -50,6 +53,9 @@ namespace DeadAir.Narrative
             
             public string UICommand;        // null se nessun comando UI
             public bool HasUICommand;
+            
+            public string VoiceId;          // null se nessun voice clip
+            public bool HasVoice;
         }
         
         /// <summary>
@@ -85,7 +91,9 @@ namespace DeadAir.Narrative
                 HasAmbience = false,
                 IsAmbienceStop = false,
                 UICommand = null,
-                HasUICommand = false
+                HasUICommand = false,
+                VoiceId = null,
+                HasVoice = false
             };
             
             if (tags == null || tags.Count == 0)
@@ -101,6 +109,12 @@ namespace DeadAir.Narrative
                 {
                     result.Speaker = ExtractValue(trimmedTag, TAG_SPEAKER);
                     result.HasSpeaker = !string.IsNullOrEmpty(result.Speaker);
+                }
+                // Voice tag
+                else if (trimmedTag.StartsWith(TAG_VOICE))
+                {
+                    result.VoiceId = ExtractValue(trimmedTag, TAG_VOICE);
+                    result.HasVoice = !string.IsNullOrEmpty(result.VoiceId);
                 }
                 // SFX tag
                 else if (trimmedTag.StartsWith(TAG_SFX))
@@ -164,7 +178,7 @@ namespace DeadAir.Narrative
                 else if (trimmedTag.StartsWith(TAG_TIMEOUT))
                 {
                     string timeoutStr = ExtractValue(trimmedTag, TAG_TIMEOUT);
-                    if (float.TryParse(timeoutStr, out float timeout))
+                    if (float.TryParse(timeoutStr, NumberStyles.Float, CultureInfo.InvariantCulture, out float timeout))
                     {
                         result.Timeout = timeout;
                     }

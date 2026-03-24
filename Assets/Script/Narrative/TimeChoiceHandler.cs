@@ -18,20 +18,8 @@ namespace DeadAir.Narrative
     /// </summary>
     public class TimedChoiceHandler : MonoBehaviour
     {
-        // ============================================
-        // EVENTS (per UI timer bar)
-        // ============================================
-        
-        /// <summary>
-        /// Progresso del timer normalizzato [0-1].
-        /// 1 = appena iniziato, 0 = scaduto.
-        /// </summary>
-        public static event System.Action<float> OnTimerProgress;
-        
-        /// <summary>
-        /// Il timer è stato cancellato (giocatore ha scelto in tempo).
-        /// </summary>
-        public static event System.Action OnTimerCancelled;
+        // Gli eventi OnTimerProgress e OnTimerCancelled sono in NarrativeEvents
+        // per mantenere il contratto dell'event hub centralizzato.
         
         // ============================================
         // PRIVATE STATE
@@ -66,9 +54,9 @@ namespace DeadAir.Narrative
             // Countdown
             _timeRemaining -= Time.deltaTime;
             
-            // Calcola progresso normalizzato
+            // Calcola progresso normalizzato e notifica via hub centrale
             float progress = Mathf.Clamp01(_timeRemaining / _totalTime);
-            OnTimerProgress?.Invoke(progress);
+            NarrativeEvents.TimerProgress(progress);
             
             // Timer scaduto
             if (_timeRemaining <= 0f)
@@ -94,7 +82,7 @@ namespace DeadAir.Narrative
             Debug.Log($"[TimedChoiceHandler] Timer avviato: {timeout}s, default: {defaultIndex}");
             
             // Notifica UI che il timer è al 100%
-            OnTimerProgress?.Invoke(1f);
+            NarrativeEvents.TimerProgress(1f);
         }
         
         /// <summary>
@@ -138,7 +126,7 @@ namespace DeadAir.Narrative
             
             Debug.Log("[TimedChoiceHandler] Timer cancellato — giocatore ha scelto.");
             
-            OnTimerCancelled?.Invoke();
+            NarrativeEvents.TimerCancelled();
         }
         
         // ============================================
