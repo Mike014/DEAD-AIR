@@ -196,7 +196,8 @@ I need to know who she is. I need to—
 
 === the_real_choice ===
 
-+ [What's your name?] # timed_choice # timeout:4 # default:1
++ [What's your name?] 
+    # timed_choice # timeout:4 # default:1
     ~ asked_name = true
     -> part_6_name
 + [...]
@@ -249,21 +250,17 @@ The Bear is HERE!!! # speaker:iris # voice:iris_10
 
 # sfx:dead_air
 ...
-Then nothing.
-
-...
-
-...
-
-...
-
-# ui:dead_air_screen
 
 { asked_name:
-    ...
+    ..I
     ...Iris. # speaker:ward
 }
 
-# ui:return_to_menu
+Then nothing.
 
+# ui:dead_air_screen
+
+...
+
+# ui:return_to_menu
 -> END
