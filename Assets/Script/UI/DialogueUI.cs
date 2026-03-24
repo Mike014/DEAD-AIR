@@ -334,6 +334,7 @@ namespace DeadAir.UI
             else
             {
                 HideContinueIndicator();
+                NarrativeEvents.VoiceStop();
                 NarrativeEvents.ContinueRequested();
             }
         }

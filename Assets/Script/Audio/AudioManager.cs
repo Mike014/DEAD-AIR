@@ -167,6 +167,30 @@ namespace DeadAir.Audio
         /// <summary>
         /// Riproduce un SFX one-shot.
         /// </summary>
+        // public void PlaySFX(string sfxId)
+        // {
+        //     if (string.IsNullOrEmpty(sfxId))
+        //         return;
+
+        //     if (_sfxSource == null)
+        //     {
+        //         Debug.LogWarning("[AudioManager] _sfxSource non assegnato nell'Inspector!");
+        //         return;
+        //     }
+
+        //     string key = sfxId.ToLowerInvariant();
+
+        //     if (_sfxLookup.TryGetValue(key, out AudioClip clip))
+        //     {
+        //         _sfxSource.PlayOneShot(clip, _sfxVolume);
+        //         Debug.Log($"[AudioManager] SFX: {sfxId}");
+        //     }
+        //     else
+        //     {
+        //         Debug.LogWarning($"[AudioManager] SFX non trovato: {sfxId}");
+        //     }
+        // }
+
         public void PlaySFX(string sfxId)
         {
             if (string.IsNullOrEmpty(sfxId))
@@ -182,8 +206,24 @@ namespace DeadAir.Audio
 
             if (_sfxLookup.TryGetValue(key, out AudioClip clip))
             {
-                _sfxSource.PlayOneShot(clip, _sfxVolume);
-                Debug.Log($"[AudioManager] SFX: {sfxId}");
+                // Gestione specifica per il loop
+                if (key == "dead_air")
+                {
+                    // Assegnazione diretta: stiamo prendendo il controllo esclusivo del canale
+                    _sfxSource.clip = clip;
+                    _sfxSource.volume = _sfxVolume;
+                    _sfxSource.loop = true;
+                    _sfxSource.Play();
+                    
+                    Debug.Log($"[AudioManager] SFX Looping: {sfxId}");
+                }
+                else
+                {
+                    // Comportamento standard per suoni one-off
+                    _sfxSource.PlayOneShot(clip, _sfxVolume);
+                    
+                    Debug.Log($"[AudioManager] SFX: {sfxId}");
+                }
             }
             else
             {

@@ -68,11 +68,13 @@ namespace DeadAir.Audio
         private void OnEnable()
         {
             NarrativeEvents.OnVoiceRequested += HandleVoiceRequested;
+            NarrativeEvents.OnVoiceStop += StopVoice;
         }
         
         private void OnDisable()
         {
             NarrativeEvents.OnVoiceRequested -= HandleVoiceRequested;
+            NarrativeEvents.OnVoiceStop -= StopVoice;
         }
         
         private void Update()

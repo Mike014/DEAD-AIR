@@ -216,7 +216,7 @@ Iris. # speaker:iris # voice:iris_09
 
 The door opens. I hear it through the line.
 
-The Bear is— # speaker:iris # voice:iris_10
+The Bear is HERE!!! # speaker:iris # voice:iris_10
 
 -> ending
 
@@ -234,7 +234,7 @@ The moment passes.
 
 The door opens. I hear it through the line.
 
-The Bear is— # speaker:iris # voice:iris_10
+The Bear is HERE!!! # speaker:iris # voice:iris_10
 
 -> ending
 

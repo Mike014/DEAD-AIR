@@ -567,6 +567,7 @@ GameObject:
   - component: {fileID: 842420230}
   - component: {fileID: 842420232}
   - component: {fileID: 842420231}
+  - component: {fileID: 842420233}
   m_Layer: 5
   m_Name: scanlines_overlay
   m_TagString: Untagged
@@ -622,7 +623,7 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 14.54
+  m_PixelsPerUnitMultiplier: 5.9
 --- !u!222 &842420232
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -631,6 +632,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 842420229}
   m_CullTransparentMesh: 1
+--- !u!114 &842420233
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 842420229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69f49fd1ff86a734183fb05aceefb05b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _validateSetupOnStart: 1
+  _minMultiplier: 1.2
+  _maxMultiplier: 1.2
+  _oscillationSpeed: 5.3
+  _glitchChance: 0.03
+  _glitchMultiplier: 5
+  _glitchDuration: 0.06
 --- !u!1 &888078391
 GameObject:
   m_ObjectHideFlags: 0
@@ -795,6 +815,7 @@ GameObject:
   - component: {fileID: 912530041}
   - component: {fileID: 912530043}
   - component: {fileID: 912530044}
+  - component: {fileID: 912530045}
   m_Layer: 5
   m_Name: ContinueIndicator
   m_TagString: Untagged
@@ -859,6 +880,24 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &912530045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 912530040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4340830f2ba795045bfde7f6ec1b9ba7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _minAlpha: 0.85
+  _maxAlpha: 1
+  _oscillationSpeed: 8
+  _glitchChance: 0.02
+  _glitchAlpha: 0.3
+  _glitchDuration: 0.05
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1372,7 +1411,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1368168748
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1815,7 +1854,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2008522635
 RectTransform:
   m_ObjectHideFlags: 0
