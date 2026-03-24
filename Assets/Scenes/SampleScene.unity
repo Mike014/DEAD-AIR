@@ -188,9 +188,9 @@ MonoBehaviour:
   _ambienceClips:
   - id: dispatch_night
     clip: {fileID: 8300000, guid: 0e3ca377fa86d134981d6192b774cdd9, type: 3}
-  _sfxVolume: 1
-  _ambienceVolume: 0.7
-  _ambienceFadeDuration: 1
+  _sfxVolume: 0.7
+  _ambienceVolume: 0.615
+  _ambienceFadeDuration: 0.55
 --- !u!1 &525343042
 GameObject:
   m_ObjectHideFlags: 0
@@ -307,16 +307,16 @@ AudioSource:
   m_GameObject: {fileID: 702291867}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 24300002, guid: 3de1ba260fa884848ad12d2ba43b3541, type: 2}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.85
   m_Pitch: 1
   Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 128
+  Priority: 136
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500
@@ -1411,7 +1411,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1368168748
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1513,13 +1513,13 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.95
   m_Pitch: 1
   Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
-  Priority: 128
+  Priority: 144
   DopplerLevel: 1
   MinDistance: 1
   MaxDistance: 500

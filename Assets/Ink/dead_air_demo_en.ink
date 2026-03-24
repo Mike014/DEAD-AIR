@@ -57,14 +57,14 @@ Line 3.
 
 === part_2 ===
 
-The LED blinks. One, two, three times.
+The LED blinks. One, two, three times. 
 
 -> wait_1
 
 = wait_1
 + [WAIT]
     Maybe it'll resolve itself.
-    The LED keeps blinking.
+    The LED keeps blinking. # sfx:phone_ring
     -> wait_2
 + [ANSWER]
     -> answer
@@ -72,14 +72,14 @@ The LED blinks. One, two, three times.
 = wait_2
 + [WAIT]
     I wipe my lips. Another sip wouldn't hurt.
-    The LED blinks. Insistent.
+    The LED blinks. Insistent. # sfx:phone_ring
     -> wait_3
 + [ANSWER]
     -> answer
 
 = wait_3
 + [WAIT]
-    I sigh. No one else will answer for me. Not tonight.
+    I sigh. No one else will answer for me. Not tonight. # sfx:phone_ring
     -> force_answer
 + [ANSWER]
     -> answer
@@ -243,12 +243,12 @@ The Bear is HERE!!! # speaker:iris # voice:iris_10
 // ============================================
 
 === ending ===
-
 # sfx:scream
 # amb:stop
-
 ...
 
+# sfx:dead_air
+...
 Then nothing.
 
 ...
@@ -257,7 +257,6 @@ Then nothing.
 
 ...
 
-# sfx:dead_air
 # ui:dead_air_screen
 
 { asked_name:
