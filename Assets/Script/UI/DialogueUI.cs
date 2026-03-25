@@ -183,7 +183,7 @@ namespace DeadAir.UI
                     ShowDeadAirScreen();
                     break;
                 case "return_to_menu":
-                    ReturnToMenu();
+                    QuitApplication();
                     break;
                 default:
                     Debug.LogWarning($"[DialogueUI] Comando UI sconosciuto: {command}");
@@ -421,6 +421,7 @@ namespace DeadAir.UI
                 ClearChoices();
                 HideTimerBar();
                 HideContinueIndicator();
+
             }
         }
 
@@ -428,7 +429,18 @@ namespace DeadAir.UI
         {
             Debug.Log("[DialogueUI] Ritorno al menu...");
             NarrativeEvents.ClearAllListeners();
-            // UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+            UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+        }
+
+        private void QuitApplication()
+        {
+            Debug.Log("[DialogueUI] Chiusura applicazione...");
+
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
         }
     }
 }

@@ -32,6 +32,8 @@ namespace DeadAir.Audio
         [Header("Audio Sources")]
         [SerializeField] private AudioSource _sfxSource;
         [SerializeField] private AudioSource _ambienceSource;
+        [SerializeField] private AudioSource _musicSource;
+        [SerializeField] private AudioSource _videoSource;
         
         [Header("SFX Clips")]
         [SerializeField] private SFXEntry[] _sfxClips;
