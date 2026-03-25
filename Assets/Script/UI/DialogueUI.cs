@@ -413,15 +413,25 @@ namespace DeadAir.UI
         {
             if (_deadAirScreen != null)
             {
-                _deadAirScreen.SetActive(true);
+                // FERMA TUTTO immediatamente
+                StopTypewriter();
 
+                // NASCONDI TUTTO L'UI DEL DIALOGO
+                HideContinueIndicator();
+                ClearChoices();
+                HideTimerBar();
+
+                // Nasconde anche il testo
                 if (_dialogueText != null)
                     _dialogueText.gameObject.SetActive(false);
 
-                ClearChoices();
-                HideTimerBar();
-                HideContinueIndicator();
+                // MOSTRA DEAD AIR SCREEN
+                _deadAirScreen.SetActive(true);
 
+                // DISABILITA INPUT (importante!)
+                _choicesVisible = true; // Trick per bloccare HandlePlayerInput
+
+                Debug.Log("[DialogueUI] Dead Air screen attivo - UI nascosta");
             }
         }
 
