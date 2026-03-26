@@ -952,9 +952,9 @@ VideoPlayer:
   m_PlaybackSpeed: 1
   m_AudioOutputMode: 2
   m_TargetAudioSources:
-  - {fileID: 0}
+  - {fileID: 1123261681}
   m_DirectAudioVolumes:
-  - 1
+  - 0.65
   m_Url: 
   m_EnabledAudioTracks: 01
   m_DirectAudioMutes: 00
