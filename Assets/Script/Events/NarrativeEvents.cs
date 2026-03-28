@@ -41,22 +41,6 @@ namespace DeadAir.Events
         public static event Action<int> OnChoiceSelected;
 
         // ============================================
-        // TIMED CHOICE EVENTS
-        // ============================================
-
-        /// <summary>
-        /// Una scelta con timer è iniziata.
-        /// timeout: secondi disponibili
-        /// defaultIndex: indice della scelta forzata se il timer scade
-        /// </summary>
-        public static event Action<float, int> OnTimedChoiceStarted;
-
-        /// <summary>
-        /// Il timer della scelta è scaduto.
-        /// </summary>
-        public static event Action OnTimedChoiceExpired;
-
-        // ============================================
         // AUDIO EVENTS
         // ============================================
 
@@ -128,21 +112,6 @@ namespace DeadAir.Events
         public static event Action OnVoiceFinished;
 
         // ============================================
-        // TIMER EVENTS
-        // ============================================
-
-        /// <summary>
-        /// Progresso del timer normalizzato [0-1].
-        /// 1 = appena iniziato, 0 = scaduto.
-        /// </summary>
-        public static event Action<float> OnTimerProgress;
-
-        /// <summary>
-        /// Il timer è stato cancellato (giocatore ha scelto in tempo).
-        /// </summary>
-        public static event Action OnTimerCancelled;
-
-        // ============================================
         // INVOKE METHODS
         // Incapsulano il null-check, evitano NullReferenceException
         // se nessuno è iscritto all'evento.
@@ -166,16 +135,6 @@ namespace DeadAir.Events
         public static void ChoiceSelected(int index)
         {
             OnChoiceSelected?.Invoke(index);
-        }
-
-        public static void TimedChoiceStarted(float timeout, int defaultIndex)
-        {
-            OnTimedChoiceStarted?.Invoke(timeout, defaultIndex);
-        }
-
-        public static void TimedChoiceExpired()
-        {
-            OnTimedChoiceExpired?.Invoke();
         }
 
         public static void SFXRequested(string sfxId)
@@ -228,16 +187,6 @@ namespace DeadAir.Events
             OnVoiceFinished?.Invoke();
         }
 
-        public static void TimerProgress(float progress)
-        {
-            OnTimerProgress?.Invoke(progress);
-        }
-
-        public static void TimerCancelled()
-        {
-            OnTimerCancelled?.Invoke();
-        }
-
         // ============================================
         // CLEANUP
         // Chiamare quando si cambia scena o si resetta il gioco.
@@ -250,8 +199,6 @@ namespace DeadAir.Events
             OnSpeakerLine = null;
             OnChoicesPresented = null;
             OnChoiceSelected = null;
-            OnTimedChoiceStarted = null;
-            OnTimedChoiceExpired = null;
             OnSFXRequested = null;
             OnAmbienceStart = null;
             OnAmbienceStop = null;
@@ -261,8 +208,6 @@ namespace DeadAir.Events
             OnContinueRequested = null;
             OnVoiceStarted = null;
             OnVoiceFinished = null;
-            OnTimerProgress = null;
-            OnTimerCancelled = null;
             OnVoiceStop = null;
         }
     }

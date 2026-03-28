@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Globalization;
-using UnityEngine;
 
 namespace DeadAir.Narrative
 {
@@ -12,7 +10,6 @@ namespace DeadAir.Narrative
     /// - Estrarre speaker dalle linee (#speaker:ward, #speaker:iris)
     /// - Parsare tag audio (#sfx:xxx, #amb:xxx)
     /// - Parsare tag voice (#voice:iris_01)
-    /// - Parsare tag timer (#timed_choice, #timeout:x, #default:x)
     /// - Parsare tag UI (#ui:xxx)
     /// </summary>
     public static class DialogueParser
@@ -26,9 +23,6 @@ namespace DeadAir.Narrative
         private const string TAG_AMB = "amb:";
         private const string TAG_UI = "ui:";
         private const string TAG_VOICE = "voice:";
-        private const string TAG_TIMED_CHOICE = "timed_choice";
-        private const string TAG_TIMEOUT = "timeout:";
-        private const string TAG_DEFAULT = "default:";
 
         // ============================================
         // PARSED RESULT STRUCT
@@ -57,17 +51,6 @@ namespace DeadAir.Narrative
 
             public string VoiceId;          // null se nessun voice clip
             public bool HasVoice;
-        }
-
-        /// <summary>
-        /// Risultato del parsing dei tag di una scelta con timer.
-        /// </summary>
-        public struct TimedChoiceData
-        {
-            public bool IsTimedChoice { get; set; }
-            public float Timeout { get; set; }
-            public int DefaultIndex { get; set; }
-            public int choiceIndex { get; set; }
         }
 
         // ============================================
@@ -145,59 +128,6 @@ namespace DeadAir.Narrative
                 {
                     result.UICommand = ExtractValue(trimmedTag, TAG_UI);
                     result.HasUICommand = !string.IsNullOrEmpty(result.UICommand);
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Parsa i tag di una scelta per verificare se è una timed choice.
-        /// Usato quando si presentano le scelte al giocatore.
-        /// </summary>
-        public static TimedChoiceData ParseTimedChoiceTags(List<string> tags)
-        {
-            var result = new TimedChoiceData
-            {
-                IsTimedChoice = false,
-                Timeout = 4f,       // default 4 secondi
-                DefaultIndex = 0    // default prima scelta
-            };
-
-            if (tags == null || tags.Count == 0)
-                return result;
-
-            foreach (string tag in tags)
-            {
-                string trimmedTag = tag.Trim().ToLowerInvariant();
-
-                // 🔍 DEBUG TEMPORANEO
-                Debug.Log($"[DialogueParser] Parsing tag: '{tag}' -> '{trimmedTag}'");
-                Debug.Log($"[DialogueParser] Is timed_choice? {trimmedTag == TAG_TIMED_CHOICE}");
-
-                // Timed choice flag
-                if (trimmedTag == TAG_TIMED_CHOICE)
-                {
-                    Debug.Log("[DialogueParser] ✅ TIMED CHOICE TROVATA!");
-                    result.IsTimedChoice = true;
-                }
-                // Timeout value
-                else if (trimmedTag.StartsWith(TAG_TIMEOUT))
-                {
-                    string timeoutStr = ExtractValue(trimmedTag, TAG_TIMEOUT);
-                    if (float.TryParse(timeoutStr, NumberStyles.Float, CultureInfo.InvariantCulture, out float timeout))
-                    {
-                        result.Timeout = timeout;
-                    }
-                }
-                // Default choice index
-                else if (trimmedTag.StartsWith(TAG_DEFAULT))
-                {
-                    string defaultStr = ExtractValue(trimmedTag, TAG_DEFAULT);
-                    if (int.TryParse(defaultStr, out int defaultIndex))
-                    {
-                        result.DefaultIndex = defaultIndex;
-                    }
                 }
             }
 

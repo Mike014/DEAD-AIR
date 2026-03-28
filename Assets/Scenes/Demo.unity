@@ -1549,50 +1549,6 @@ MonoBehaviour:
   _timerBarContainer: {fileID: 2008522634}
   _timerBarFill: {fileID: 525343044}
   _deadAirScreen: {fileID: 1368168747}
---- !u!1 &1343614626
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1343614627}
-  - component: {fileID: 1343614628}
-  m_Layer: 0
-  m_Name: TimedChoiceHandler
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1343614627
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1343614626}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 960, y: 540, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1343614628
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1343614626}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a7dbede2d6f81cc4ca344265647b024f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1368168747
 GameObject:
   m_ObjectHideFlags: 0
@@ -2163,6 +2119,5 @@ SceneRoots:
   - {fileID: 1555453176}
   - {fileID: 477392701}
   - {fileID: 1768828977}
-  - {fileID: 1343614627}
   - {fileID: 797356349}
   - {fileID: 547466891}

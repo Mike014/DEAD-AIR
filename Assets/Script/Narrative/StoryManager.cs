@@ -11,13 +11,12 @@ namespace DeadAir.Narrative
     /// Responsabilità:
     /// - Caricare e gestire la Story ink
     /// - Processare linee e tag
-    /// - Dispatchare eventi ai sistemi (Audio, UI, Timer, Voice)
+    /// - Dispatchare eventi ai sistemi (Audio, UI, Voice)
     /// - Gestire il flusso Continue/Choice
     /// 
     /// NON responsabile di:
     /// - Rendering UI (→ DialogueUI)
     /// - Riproduzione audio (→ AudioManager, VoiceManager)
-    /// - Gestione timer (→ TimedChoiceHandler)
     /// </summary>
     public class StoryManager : MonoBehaviour
     {
@@ -228,61 +227,8 @@ namespace DeadAir.Narrative
 
             Log($"Presentando {_currentChoices.Count} scelte.");
 
-            // Lista per raccogliere i dati dei timer delle scelte
-            List<DialogueParser.TimedChoiceData> timedChoicesData = new List<DialogueParser.TimedChoiceData>();
-
-            // Per ogni scelta, simula l'esecuzione per leggere i tag della linea successiva
-            for (int i = 0; i < _currentChoices.Count; i++)
-            {
-                var choice = _currentChoices[i];
-
-                // Salva lo stato corrente
-                string savedState = _story.state.ToJson();
-
-                try
-                {
-                    // Simula la scelta
-                    _story.ChooseChoiceIndex(i);
-
-                    // Leggi la prima linea dopo la scelta
-                    if (_story.canContinue)
-                    {
-                        _story.Continue();
-                        var tags = _story.currentTags;
-
-                        Log($"Scelta {i} tags dalla riga: {string.Join(", ", tags ?? new List<string>())}");
-
-                        // Analizza i tag per timer
-                        var timedData = DialogueParser.ParseTimedChoiceTags(tags);
-                        timedData.choiceIndex = i;
-                        timedChoicesData.Add(timedData);
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    Log($"Errore simulazione scelta {i}: {e.Message}");
-                    timedChoicesData.Add(new DialogueParser.TimedChoiceData { choiceIndex = i });
-                }
-                finally
-                {
-                    // Ripristina sempre lo stato
-                    _story.state.LoadJson(savedState);
-                }
-            }
-
-            // 1. PRIMA: mostra le scelte
+            // Notifica le scelte (senza logica timer)
             NarrativeEvents.ChoicesPresented(new List<Choice>(_currentChoices));
-
-            // 2. POI: controlla se c'è un timer
-            foreach (var timedData in timedChoicesData)
-            {
-                if (timedData.IsTimedChoice)
-                {
-                    Log($" → TIMED CHOICE RILEVATA su scelta {timedData.choiceIndex}: {timedData.Timeout}s");
-                    NarrativeEvents.TimedChoiceStarted(timedData.Timeout, timedData.DefaultIndex);
-                    break; // Solo un timer per volta
-                }
-            }
         }
 
         // ============================================

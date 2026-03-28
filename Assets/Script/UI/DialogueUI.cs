@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using Ink.Runtime;
 using DeadAir.Events;
@@ -15,7 +14,6 @@ namespace DeadAir.UI
     /// Responsabilità:
     /// - Mostrare testo con typewriter effect
     /// - Mostrare/nascondere scelte
-    /// - Mostrare/nascondere timer bar
     /// - Gestire click per continuare
     /// - Gestire comandi UI dal file ink
     /// - Posizionare il cursore dopo l'ultimo carattere
@@ -23,7 +21,6 @@ namespace DeadAir.UI
     /// NON responsabile di:
     /// - Logica narrativa (→ StoryManager)
     /// - Audio (→ AudioManager, VoiceManager)
-    /// - Timer logic (→ TimedChoiceHandler)
     /// </summary>
     public class DialogueUI : MonoBehaviour
     {
@@ -38,7 +35,7 @@ namespace DeadAir.UI
         [Header("Cursor Settings")]
         [SerializeField] private Vector2 _cursorOffset = new Vector2(5f, 0f);
 
-        [Header("Speaker Colors")]
+        // [Header("Speaker Colors")]
         [SerializeField] private Color _narratorColor = new Color(1f, 0.69f, 0f);      // Ambra #FFB000
         [SerializeField] private Color _wardColor = new Color(1f, 0.69f, 0f);          // Ambra #FFB000
         [SerializeField] private Color _irisColor = new Color(0f, 1f, 0.53f);          // Verde #00FF88
@@ -50,10 +47,6 @@ namespace DeadAir.UI
         [Header("Choices")]
         [SerializeField] private Transform _choicesContainer;
         [SerializeField] private ChoiceButton _choiceButtonPrefab;
-
-        [Header("Timer Bar")]
-        [SerializeField] private GameObject _timerBarContainer;
-        [SerializeField] private Image _timerBarFill;
 
         [Header("Special Screens")]
         [SerializeField] private GameObject _deadAirScreen;
@@ -78,9 +71,6 @@ namespace DeadAir.UI
             if (_continueIndicator != null)
                 _continueIndicator.gameObject.SetActive(false);
 
-            if (_timerBarContainer != null)
-                _timerBarContainer.SetActive(false);
-
             if (_deadAirScreen != null)
                 _deadAirScreen.SetActive(false);
 
@@ -93,9 +83,6 @@ namespace DeadAir.UI
             NarrativeEvents.OnDialogueLine += HandleDialogueLine;
             NarrativeEvents.OnSpeakerLine += HandleSpeakerLine;
             NarrativeEvents.OnChoicesPresented += HandleChoicesPresented;
-            NarrativeEvents.OnTimerProgress += HandleTimerProgress;
-            NarrativeEvents.OnTimerCancelled += HandleTimerCancelled;
-            NarrativeEvents.OnTimedChoiceStarted += HandleTimedChoiceStarted;
             NarrativeEvents.OnUICommand += HandleUICommand;
             NarrativeEvents.OnStoryEnd += HandleStoryEnd;
         }
@@ -106,9 +93,6 @@ namespace DeadAir.UI
             NarrativeEvents.OnDialogueLine -= HandleDialogueLine;
             NarrativeEvents.OnSpeakerLine -= HandleSpeakerLine;
             NarrativeEvents.OnChoicesPresented -= HandleChoicesPresented;
-            NarrativeEvents.OnTimerProgress -= HandleTimerProgress;
-            NarrativeEvents.OnTimerCancelled -= HandleTimerCancelled;
-            NarrativeEvents.OnTimedChoiceStarted -= HandleTimedChoiceStarted;
             NarrativeEvents.OnUICommand -= HandleUICommand;
             NarrativeEvents.OnStoryEnd -= HandleStoryEnd;
         }
@@ -129,14 +113,12 @@ namespace DeadAir.UI
         private void HandleDialogueLine(string text)
         {
             ClearChoices();
-            HideTimerBar();
             ShowText(text, _narratorColor);
         }
 
         private void HandleSpeakerLine(string speaker, string text)
         {
             ClearChoices();
-            HideTimerBar();
 
             Color textColor = speaker.ToLowerInvariant() switch
             {
@@ -157,22 +139,6 @@ namespace DeadAir.UI
                 // _dialogueText.text = "";
                 _dialogueText.text = "01101001 01110100 01110011 00100000 01111001 01101111 01110101 01110010 00100000 01100110 01100001 01110101 01101100 01110100";
             ShowChoices(choices);
-        }
-
-        private void HandleTimedChoiceStarted(float timeout, int defaultIndex)
-        {
-            ShowTimerBar();
-        }
-
-        private void HandleTimerProgress(float progress)
-        {
-            if (_timerBarFill != null)
-                _timerBarFill.fillAmount = progress;
-        }
-
-        private void HandleTimerCancelled()
-        {
-            HideTimerBar();
         }
 
         private void HandleUICommand(string command)
@@ -370,7 +336,6 @@ namespace DeadAir.UI
         private void OnChoiceClicked(int index)
         {
             ClearChoices();
-            HideTimerBar();
             NarrativeEvents.ChoiceSelected(index);
         }
 
@@ -383,26 +348,6 @@ namespace DeadAir.UI
             }
             _activeChoiceButtons.Clear();
             _choicesVisible = false;
-        }
-
-        // ============================================
-        // TIMER BAR
-        // ============================================
-
-        private void ShowTimerBar()
-        {
-            if (_timerBarContainer != null)
-            {
-                _timerBarContainer.SetActive(true);
-                if (_timerBarFill != null)
-                    _timerBarFill.fillAmount = 1f;
-            }
-        }
-
-        private void HideTimerBar()
-        {
-            if (_timerBarContainer != null)
-                _timerBarContainer.SetActive(false);
         }
 
         // ============================================
@@ -419,7 +364,6 @@ namespace DeadAir.UI
                 // NASCONDI TUTTO L'UI DEL DIALOGO
                 HideContinueIndicator();
                 ClearChoices();
-                HideTimerBar();
 
                 // Nasconde anche il testo
                 if (_dialogueText != null)
