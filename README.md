@@ -7,6 +7,8 @@
 **Narrative Engine**: Ink (Inkle)  
 **Durata Demo**: 15-20 minuti (4-5 chiamate)
 
+![Copertina del progetto](Logo.png)
+
 ---
 
 ## 1. HIGH CONCEPT
