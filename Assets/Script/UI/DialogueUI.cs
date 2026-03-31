@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using Ink.Runtime;
 using DeadAir.Events;
@@ -11,11 +10,11 @@ namespace DeadAir.UI
     /// <summary>
     /// Gestisce la UI del dialogo: testo, scelte, timer bar.
     /// Effetto typewriter per il testo narrativo.
+    /// Comunica via Event Channels (ScriptableObject).
     /// 
     /// Responsabilità:
     /// - Mostrare testo con typewriter effect
     /// - Mostrare/nascondere scelte
-    /// - Mostrare/nascondere timer bar
     /// - Gestire click per continuare
     /// - Gestire comandi UI dal file ink
     /// - Posizionare il cursore dopo l'ultimo carattere
@@ -23,12 +22,11 @@ namespace DeadAir.UI
     /// NON responsabile di:
     /// - Logica narrativa (→ StoryManager)
     /// - Audio (→ AudioManager, VoiceManager)
-    /// - Timer logic (→ TimedChoiceHandler)
     /// </summary>
     public class DialogueUI : MonoBehaviour
     {
         // ============================================
-        // SERIALIZED FIELDS
+        // SERIALIZED FIELDS - UI REFERENCES
         // ============================================
 
         [Header("Text Display")]
@@ -51,12 +49,24 @@ namespace DeadAir.UI
         [SerializeField] private Transform _choicesContainer;
         [SerializeField] private ChoiceButton _choiceButtonPrefab;
 
-        [Header("Timer Bar")]
-        [SerializeField] private GameObject _timerBarContainer;
-        [SerializeField] private Image _timerBarFill;
-
         [Header("Special Screens")]
         [SerializeField] private GameObject _deadAirScreen;
+
+        // ============================================
+        // EVENT CHANNELS (Dependency Injection)
+        // ============================================
+
+        [Header("Input Channels (DialogueUI è Observer)")]
+        [SerializeField] private StringEventChannel dialogueLineChannel;
+        [SerializeField] private StringStringEventChannel speakerLineChannel;
+        [SerializeField] private ChoiceListEventChannel choicesPresentedChannel;
+        [SerializeField] private StringEventChannel uiCommandChannel;
+        [SerializeField] private VoidEventChannel storyEndChannel;
+
+        [Header("Output Channels (DialogueUI è Publisher)")]
+        [SerializeField] private VoidEventChannel continueRequestedChannel;
+        [SerializeField] private IntEventChannel choiceSelectedChannel;
+        [SerializeField] private VoidEventChannel voiceStopChannel;
 
         // ============================================
         // PRIVATE STATE
@@ -78,9 +88,6 @@ namespace DeadAir.UI
             if (_continueIndicator != null)
                 _continueIndicator.gameObject.SetActive(false);
 
-            if (_timerBarContainer != null)
-                _timerBarContainer.SetActive(false);
-
             if (_deadAirScreen != null)
                 _deadAirScreen.SetActive(false);
 
@@ -89,28 +96,40 @@ namespace DeadAir.UI
 
         private void OnEnable()
         {
-            // Subscribe agli eventi
-            NarrativeEvents.OnDialogueLine += HandleDialogueLine;
-            NarrativeEvents.OnSpeakerLine += HandleSpeakerLine;
-            NarrativeEvents.OnChoicesPresented += HandleChoicesPresented;
-            NarrativeEvents.OnTimerProgress += HandleTimerProgress;
-            NarrativeEvents.OnTimerCancelled += HandleTimerCancelled;
-            NarrativeEvents.OnTimedChoiceStarted += HandleTimedChoiceStarted;
-            NarrativeEvents.OnUICommand += HandleUICommand;
-            NarrativeEvents.OnStoryEnd += HandleStoryEnd;
+            // Subscribe agli eventi via channels (DialogueUI è Observer)
+            if (dialogueLineChannel != null)
+                dialogueLineChannel.Subscribe(HandleDialogueLine);
+            
+            if (speakerLineChannel != null)
+                speakerLineChannel.Subscribe(HandleSpeakerLine);
+            
+            if (choicesPresentedChannel != null)
+                choicesPresentedChannel.Subscribe(HandleChoicesPresented);
+            
+            if (uiCommandChannel != null)
+                uiCommandChannel.Subscribe(HandleUICommand);
+            
+            if (storyEndChannel != null)
+                storyEndChannel.Subscribe(HandleStoryEnd);
         }
 
         private void OnDisable()
         {
-            // Unsubscribe per evitare memory leak
-            NarrativeEvents.OnDialogueLine -= HandleDialogueLine;
-            NarrativeEvents.OnSpeakerLine -= HandleSpeakerLine;
-            NarrativeEvents.OnChoicesPresented -= HandleChoicesPresented;
-            NarrativeEvents.OnTimerProgress -= HandleTimerProgress;
-            NarrativeEvents.OnTimerCancelled -= HandleTimerCancelled;
-            NarrativeEvents.OnTimedChoiceStarted -= HandleTimedChoiceStarted;
-            NarrativeEvents.OnUICommand -= HandleUICommand;
-            NarrativeEvents.OnStoryEnd -= HandleStoryEnd;
+            // Unsubscribe per evitare memory leak - CRITICO
+            if (dialogueLineChannel != null)
+                dialogueLineChannel.Unsubscribe(HandleDialogueLine);
+            
+            if (speakerLineChannel != null)
+                speakerLineChannel.Unsubscribe(HandleSpeakerLine);
+            
+            if (choicesPresentedChannel != null)
+                choicesPresentedChannel.Unsubscribe(HandleChoicesPresented);
+            
+            if (uiCommandChannel != null)
+                uiCommandChannel.Unsubscribe(HandleUICommand);
+            
+            if (storyEndChannel != null)
+                storyEndChannel.Unsubscribe(HandleStoryEnd);
         }
 
         private void Update()
@@ -123,20 +142,24 @@ namespace DeadAir.UI
         }
 
         // ============================================
-        // EVENT HANDLERS
+        // EVENT HANDLERS (Observer Reactions)
         // ============================================
 
+        /// <summary>
+        /// Chiamato quando StoryManager pubblica evento DialogueLine.
+        /// </summary>
         private void HandleDialogueLine(string text)
         {
             ClearChoices();
-            HideTimerBar();
             ShowText(text, _narratorColor);
         }
 
+        /// <summary>
+        /// Chiamato quando StoryManager pubblica evento SpeakerLine.
+        /// </summary>
         private void HandleSpeakerLine(string speaker, string text)
         {
             ClearChoices();
-            HideTimerBar();
 
             Color textColor = speaker.ToLowerInvariant() switch
             {
@@ -148,33 +171,25 @@ namespace DeadAir.UI
             ShowText(text, textColor);
         }
 
-        private void HandleChoicesPresented(List<Choice> choices)
+        /// <summary>
+        /// Chiamato quando StoryManager pubblica evento ChoicesPresented.
+        /// Nota: firma cambiata da List<Choice> a IReadOnlyList<Choice>
+        /// </summary>
+        private void HandleChoicesPresented(IReadOnlyList<Choice> choices)
         {
             StopTypewriter();
             HideContinueIndicator();
-            // Pulisci il testo precedente
+            
+            // Pulisci il testo precedente (opzionale - easter egg binario)
             if (_dialogueText != null)
-                // _dialogueText.text = "";
                 _dialogueText.text = "01101001 01110100 01110011 00100000 01111001 01101111 01110101 01110010 00100000 01100110 01100001 01110101 01101100 01110100";
+            
             ShowChoices(choices);
         }
 
-        private void HandleTimedChoiceStarted(float timeout, int defaultIndex)
-        {
-            ShowTimerBar();
-        }
-
-        private void HandleTimerProgress(float progress)
-        {
-            if (_timerBarFill != null)
-                _timerBarFill.fillAmount = progress;
-        }
-
-        private void HandleTimerCancelled()
-        {
-            HideTimerBar();
-        }
-
+        /// <summary>
+        /// Chiamato quando StoryManager pubblica comando UI.
+        /// </summary>
         private void HandleUICommand(string command)
         {
             switch (command.ToLowerInvariant())
@@ -191,6 +206,9 @@ namespace DeadAir.UI
             }
         }
 
+        /// <summary>
+        /// Chiamato quando StoryManager pubblica evento StoryEnd.
+        /// </summary>
         private void HandleStoryEnd()
         {
             Debug.Log("[DialogueUI] Storia terminata.");
@@ -323,9 +341,13 @@ namespace DeadAir.UI
         }
 
         // ============================================
-        // PLAYER INPUT
+        // PLAYER INPUT (DialogueUI è Publisher)
         // ============================================
 
+        /// <summary>
+        /// Gestisce input player: skip typewriter o pubblica ContinueRequested.
+        /// DialogueUI agisce come Publisher verso StoryManager.
+        /// </summary>
         private void HandlePlayerInput()
         {
             if (_choicesVisible)
@@ -333,13 +355,21 @@ namespace DeadAir.UI
 
             if (_isTyping)
             {
+                // Skip typewriter
                 _skipRequested = true;
             }
             else
             {
+                // Pubblica evento: player vuole continuare
                 HideContinueIndicator();
-                NarrativeEvents.VoiceStop();
-                NarrativeEvents.ContinueRequested();
+                
+                // Stop voice clip in corso
+                if (voiceStopChannel != null)
+                    voiceStopChannel.RaiseEvent();
+                
+                // Richiesta continue a StoryManager
+                if (continueRequestedChannel != null)
+                    continueRequestedChannel.RaiseEvent();
             }
         }
 
@@ -347,7 +377,11 @@ namespace DeadAir.UI
         // CHOICES
         // ============================================
 
-        private void ShowChoices(List<Choice> choices)
+        /// <summary>
+        /// Mostra bottoni di scelta.
+        /// Nota: firma cambiata per accettare IReadOnlyList<Choice>
+        /// </summary>
+        private void ShowChoices(IReadOnlyList<Choice> choices)
         {
             ClearChoices();
 
@@ -367,11 +401,17 @@ namespace DeadAir.UI
             _choicesVisible = true;
         }
 
+        /// <summary>
+        /// Callback da ChoiceButton: pubblica evento ChoiceSelected.
+        /// DialogueUI agisce come Publisher verso StoryManager.
+        /// </summary>
         private void OnChoiceClicked(int index)
         {
             ClearChoices();
-            HideTimerBar();
-            NarrativeEvents.ChoiceSelected(index);
+            
+            // Pubblica evento: player ha scelto
+            if (choiceSelectedChannel != null)
+                choiceSelectedChannel.RaiseEvent(index);
         }
 
         private void ClearChoices()
@@ -383,26 +423,6 @@ namespace DeadAir.UI
             }
             _activeChoiceButtons.Clear();
             _choicesVisible = false;
-        }
-
-        // ============================================
-        // TIMER BAR
-        // ============================================
-
-        private void ShowTimerBar()
-        {
-            if (_timerBarContainer != null)
-            {
-                _timerBarContainer.SetActive(true);
-                if (_timerBarFill != null)
-                    _timerBarFill.fillAmount = 1f;
-            }
-        }
-
-        private void HideTimerBar()
-        {
-            if (_timerBarContainer != null)
-                _timerBarContainer.SetActive(false);
         }
 
         // ============================================
@@ -419,7 +439,6 @@ namespace DeadAir.UI
                 // NASCONDI TUTTO L'UI DEL DIALOGO
                 HideContinueIndicator();
                 ClearChoices();
-                HideTimerBar();
 
                 // Nasconde anche il testo
                 if (_dialogueText != null)
@@ -438,7 +457,10 @@ namespace DeadAir.UI
         private void ReturnToMenu()
         {
             Debug.Log("[DialogueUI] Ritorno al menu...");
-            NarrativeEvents.ClearAllListeners();
+            
+            // NOTA: ClearAllListeners non esiste più in architettura channel-based
+            // Unsubscribe viene gestito automaticamente da OnDisable()
+            
             UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
         }
 
@@ -449,7 +471,7 @@ namespace DeadAir.UI
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
-        Application.Quit();
+            Application.Quit();
 #endif
         }
     }

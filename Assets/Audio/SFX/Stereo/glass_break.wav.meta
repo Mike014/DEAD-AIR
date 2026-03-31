@@ -1,12 +1,12 @@
 fileFormatVersion: 2
-guid: 7c2e435752d21df4dbda1306b3b71abe
+guid: 4eb625e18e958f74cace4b8ae6ad56d6
 AudioImporter:
   externalObjects: {}
   serializedVersion: 7
   defaultSettings:
     serializedVersion: 2
-    loadType: 2
-    sampleRateSetting: 2
+    loadType: 0
+    sampleRateSetting: 1
     sampleRateOverride: 44100
     compressionFormat: 2
     quality: 1

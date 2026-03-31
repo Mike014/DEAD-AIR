@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bf24ea23743d7f49873039349fce2d3, type: 3}
+  m_Name: SFX_Demo
+  m_EditorClassIdentifier: 
+  libraryName: SFX_Demo
+  description: Descrizione libreria audio
+  clips:
+  - id: glass_break
+    clip: {fileID: 8300000, guid: 4eb625e18e958f74cace4b8ae6ad56d6, type: 3}
+    notes: 
+  - id: phone_pickup
+    clip: {fileID: 8300000, guid: 33ae188d819d16d418c824a104cfc0a1, type: 3}
+    notes: 
+  - id: phone_ring
+    clip: {fileID: 8300000, guid: 36e46b95117e01843b6f4f94a30e6bd5, type: 3}
+    notes: 
+  - id: scratch
+    clip: {fileID: 8300000, guid: 97baeb65a6072a544a27279fc7fe60c2, type: 3}
+    notes: 
+  - id: door_open
+    clip: {fileID: 8300000, guid: 44dcb21f082dea94880ad5362aad6321, type: 3}
+    notes: 
+  - id: scream
+    clip: {fileID: 8300000, guid: ef0420fd0d7417b41ae18bbcc4d4d4ca, type: 3}
+    notes: 
+  - id: dead_air
+    clip: {fileID: 8300000, guid: a74cfdf6ea50ba848901b2298d823bf3, type: 3}
+    notes: 

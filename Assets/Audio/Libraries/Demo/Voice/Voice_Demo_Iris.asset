@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bf24ea23743d7f49873039349fce2d3, type: 3}
+  m_Name: Voice_Demo_Iris
+  m_EditorClassIdentifier: 
+  libraryName: Unnamed Library
+  description: Descrizione libreria audio
+  clips:
+  - id: iris_01
+    clip: {fileID: 8300000, guid: 2dad74fd63cb9f24f9e78ce3047f13b9, type: 3}
+    notes: 
+  - id: iris_02
+    clip: {fileID: 8300000, guid: 64e11083087e838419c9810c53c08467, type: 3}
+    notes: 
+  - id: iris_03
+    clip: {fileID: 8300000, guid: df208a16125eb8d40ab298e4b9b050bc, type: 3}
+    notes: 
+  - id: iris_04
+    clip: {fileID: 8300000, guid: e6ee4e03d1af92f44b0b34e03bda342c, type: 3}
+    notes: 
+  - id: iris_05
+    clip: {fileID: 8300000, guid: 668a0e5388cd91341b85714f53995e36, type: 3}
+    notes: 
+  - id: iris_06
+    clip: {fileID: 8300000, guid: ad8995f13455b3a44b8cca8432569697, type: 3}
+    notes: 
+  - id: iris_07
+    clip: {fileID: 8300000, guid: d9e79bd87d57b1a47976c19a0a97b689, type: 3}
+    notes: 
+  - id: iris_08
+    clip: {fileID: 8300000, guid: 455fa02e1d598744cb09fd02e62a20c7, type: 3}
+    notes: 
+  - id: iris_09
+    clip: {fileID: 8300000, guid: 2f1b91df84cbab24c9170f3475466e2c, type: 3}
+    notes: 
+  - id: iris_10
+    clip: {fileID: 8300000, guid: 8550afcc7adb3fb4a844c345fd3df385, type: 3}
+    notes: 
