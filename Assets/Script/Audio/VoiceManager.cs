@@ -7,6 +7,7 @@ namespace DeadAir.Audio
     /// <summary>
     /// Gestisce la riproduzione delle voci dei personaggi.
     /// Separato da AudioManager per gestire la sincronizzazione con il typewriter.
+    /// Comunica via Event Channels (ScriptableObject).
     /// 
     /// Responsabilità:
     /// - Riprodurre clip vocali per ID (es. "iris_01")
@@ -17,9 +18,6 @@ namespace DeadAir.Audio
     /// </summary>
     public class VoiceManager : MonoBehaviour
     {
-        // Gli eventi OnVoiceStarted e OnVoiceFinished sono in NarrativeEvents
-        // per mantenere il contratto dell'event hub centralizzato.
-        
         // ============================================
         // SERIALIZED FIELDS
         // ============================================
@@ -32,6 +30,18 @@ namespace DeadAir.Audio
         
         [Header("Settings")]
         [SerializeField] [Range(0f, 1f)] private float _voiceVolume = 1f;
+        
+        // ============================================
+        // EVENT CHANNELS (Dependency Injection)
+        // ============================================
+        
+        [Header("Input Channels (VoiceManager è Observer)")]
+        [SerializeField] private StringEventChannel voiceRequestedChannel;
+        [SerializeField] private VoidEventChannel voiceStopChannel;
+        
+        [Header("Output Channels (VoiceManager è Publisher)")]
+        [SerializeField] private FloatEventChannel voiceStartedChannel;
+        [SerializeField] private VoidEventChannel voiceFinishedChannel;
         
         // ============================================
         // PRIVATE STATE
@@ -67,14 +77,22 @@ namespace DeadAir.Audio
         
         private void OnEnable()
         {
-            NarrativeEvents.OnVoiceRequested += HandleVoiceRequested;
-            NarrativeEvents.OnVoiceStop += StopVoice;
+            // Subscribe ai channels (VoiceManager è Observer)
+            if (voiceRequestedChannel != null)
+                voiceRequestedChannel.Subscribe(HandleVoiceRequested);
+            
+            if (voiceStopChannel != null)
+                voiceStopChannel.Subscribe(StopVoice);
         }
         
         private void OnDisable()
         {
-            NarrativeEvents.OnVoiceRequested -= HandleVoiceRequested;
-            NarrativeEvents.OnVoiceStop -= StopVoice;
+            // Unsubscribe dai channels
+            if (voiceRequestedChannel != null)
+                voiceRequestedChannel.Unsubscribe(HandleVoiceRequested);
+            
+            if (voiceStopChannel != null)
+                voiceStopChannel.Unsubscribe(StopVoice);
         }
         
         private void Update()
@@ -84,7 +102,10 @@ namespace DeadAir.Audio
             if (_isPlaying && _voiceSource != null && !_voiceSource.isPlaying)
             {
                 _isPlaying = false;
-                NarrativeEvents.VoiceFinished();
+                
+                // Pubblica evento: voice finished (VoiceManager è Publisher)
+                if (voiceFinishedChannel != null)
+                    voiceFinishedChannel.RaiseEvent();
             }
         }
         
@@ -121,11 +142,12 @@ namespace DeadAir.Audio
         }
         
         // ============================================
-        // EVENT HANDLERS
+        // EVENT HANDLERS (Observer Reactions)
         // ============================================
         
         /// <summary>
         /// Quando arriva una richiesta di voice con ID esplicito.
+        /// Subscribed a voiceRequestedChannel.
         /// </summary>
         private void HandleVoiceRequested(string voiceId)
         {
@@ -162,6 +184,7 @@ namespace DeadAir.Audio
         
         /// <summary>
         /// Riproduce una clip vocale.
+        /// Pubblica evento VoiceStarted con durata.
         /// </summary>
         public void PlayVoice(AudioClip clip)
         {
@@ -181,11 +204,14 @@ namespace DeadAir.Audio
 
             _isPlaying = true;
 
-            NarrativeEvents.VoiceStarted(clip.length);
+            // Pubblica evento: voice started (VoiceManager è Publisher)
+            if (voiceStartedChannel != null)
+                voiceStartedChannel.RaiseEvent(clip.length);
         }
         
         /// <summary>
         /// Ferma la voce corrente.
+        /// Subscribed a voiceStopChannel.
         /// </summary>
         public void StopVoice()
         {
@@ -193,7 +219,10 @@ namespace DeadAir.Audio
             {
                 _voiceSource.Stop();
                 _isPlaying = false;
-                NarrativeEvents.VoiceFinished();
+                
+                // Pubblica evento: voice finished
+                if (voiceFinishedChannel != null)
+                    voiceFinishedChannel.RaiseEvent();
             }
         }
         

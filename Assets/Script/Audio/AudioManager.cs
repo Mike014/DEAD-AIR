@@ -6,7 +6,7 @@ namespace DeadAir.Audio
 {
     /// <summary>
     /// Gestisce la riproduzione di SFX e Ambience.
-    /// Ascolta gli eventi da NarrativeEvents e riproduce l'audio appropriato.
+    /// Ascolta gli eventi dai channels ScriptableObject e riproduce l'audio appropriato.
     /// 
     /// Responsabilità:
     /// - Riprodurre SFX one-shot
@@ -45,6 +45,15 @@ namespace DeadAir.Audio
         [SerializeField] [Range(0f, 1f)] private float _sfxVolume = 1f;
         [SerializeField] [Range(0f, 1f)] private float _ambienceVolume = 0.5f;
         [SerializeField] private float _ambienceFadeDuration = 1f;
+        
+        // ============================================
+        // EVENT CHANNELS (Dependency Injection)
+        // ============================================
+        
+        [Header("Audio Event Channels (Observer)")]
+        [SerializeField] private StringEventChannel sfxRequestedChannel;
+        [SerializeField] private StringEventChannel ambienceStartChannel;
+        [SerializeField] private VoidEventChannel ambienceStopChannel;
         
         // ============================================
         // PRIVATE STATE
@@ -99,16 +108,28 @@ namespace DeadAir.Audio
         
         private void OnEnable()
         {
-            NarrativeEvents.OnSFXRequested += PlaySFX;
-            NarrativeEvents.OnAmbienceStart += StartAmbience;
-            NarrativeEvents.OnAmbienceStop += StopAmbience;
+            // Subscribe ai channels
+            if (sfxRequestedChannel != null)
+                sfxRequestedChannel.Subscribe(PlaySFX);
+            
+            if (ambienceStartChannel != null)
+                ambienceStartChannel.Subscribe(StartAmbience);
+            
+            if (ambienceStopChannel != null)
+                ambienceStopChannel.Subscribe(StopAmbience);
         }
         
         private void OnDisable()
         {
-            NarrativeEvents.OnSFXRequested -= PlaySFX;
-            NarrativeEvents.OnAmbienceStart -= StartAmbience;
-            NarrativeEvents.OnAmbienceStop -= StopAmbience;
+            // Unsubscribe dai channels
+            if (sfxRequestedChannel != null)
+                sfxRequestedChannel.Unsubscribe(PlaySFX);
+            
+            if (ambienceStartChannel != null)
+                ambienceStartChannel.Unsubscribe(StartAmbience);
+            
+            if (ambienceStopChannel != null)
+                ambienceStopChannel.Unsubscribe(StopAmbience);
         }
         
         // ============================================
@@ -168,31 +189,8 @@ namespace DeadAir.Audio
         
         /// <summary>
         /// Riproduce un SFX one-shot.
+        /// Subscribed a sfxRequestedChannel.
         /// </summary>
-        // public void PlaySFX(string sfxId)
-        // {
-        //     if (string.IsNullOrEmpty(sfxId))
-        //         return;
-
-        //     if (_sfxSource == null)
-        //     {
-        //         Debug.LogWarning("[AudioManager] _sfxSource non assegnato nell'Inspector!");
-        //         return;
-        //     }
-
-        //     string key = sfxId.ToLowerInvariant();
-
-        //     if (_sfxLookup.TryGetValue(key, out AudioClip clip))
-        //     {
-        //         _sfxSource.PlayOneShot(clip, _sfxVolume);
-        //         Debug.Log($"[AudioManager] SFX: {sfxId}");
-        //     }
-        //     else
-        //     {
-        //         Debug.LogWarning($"[AudioManager] SFX non trovato: {sfxId}");
-        //     }
-        // }
-
         public void PlaySFX(string sfxId)
         {
             if (string.IsNullOrEmpty(sfxId))
@@ -211,7 +209,6 @@ namespace DeadAir.Audio
                 // Gestione specifica per il loop
                 if (key == "dead_air")
                 {
-                    // Assegnazione diretta: stiamo prendendo il controllo esclusivo del canale
                     _sfxSource.clip = clip;
                     _sfxSource.volume = _sfxVolume;
                     _sfxSource.loop = true;
@@ -239,6 +236,7 @@ namespace DeadAir.Audio
         
         /// <summary>
         /// Avvia un loop ambience con fade in.
+        /// Subscribed a ambienceStartChannel.
         /// </summary>
         public void StartAmbience(string ambienceId)
         {
@@ -272,6 +270,7 @@ namespace DeadAir.Audio
         
         /// <summary>
         /// Ferma l'ambience con fade out.
+        /// Subscribed a ambienceStopChannel.
         /// </summary>
         public void StopAmbience()
         {
@@ -290,9 +289,6 @@ namespace DeadAir.Audio
         // COROUTINES
         // ============================================
         
-        /// <summary>
-        /// Fade del volume ambience.
-        /// </summary>
         private System.Collections.IEnumerator FadeAmbienceIn(float from, float to, float duration)
         {
             yield return FadeAmbience(from, to, duration);
@@ -312,12 +308,8 @@ namespace DeadAir.Audio
             }
 
             _ambienceSource.volume = to;
-            // Non azzera _ambienceFadeCoroutine: lo fa il chiamante
         }
 
-        /// <summary>
-        /// Fade out e poi stop. Gestisce il lifetime di _ambienceFadeCoroutine.
-        /// </summary>
         private System.Collections.IEnumerator FadeAmbienceAndStop(float from, float to, float duration)
         {
             yield return FadeAmbience(from, to, duration);
@@ -329,17 +321,11 @@ namespace DeadAir.Audio
         // PUBLIC API
         // ============================================
         
-        /// <summary>
-        /// Imposta il volume SFX globale.
-        /// </summary>
         public void SetSFXVolume(float volume)
         {
             _sfxVolume = Mathf.Clamp01(volume);
         }
         
-        /// <summary>
-        /// Imposta il volume ambience globale.
-        /// </summary>
         public void SetAmbienceVolume(float volume)
         {
             _ambienceVolume = Mathf.Clamp01(volume);
@@ -349,9 +335,6 @@ namespace DeadAir.Audio
             }
         }
         
-        /// <summary>
-        /// Ferma tutto l'audio immediatamente (per pause/scene change).
-        /// </summary>
         public void StopAll()
         {
             if (_ambienceFadeCoroutine != null)

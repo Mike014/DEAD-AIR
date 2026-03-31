@@ -193,6 +193,9 @@ MonoBehaviour:
   _sfxVolume: 0.758
   _ambienceVolume: 0.783
   _ambienceFadeDuration: 0.55
+  sfxRequestedChannel: {fileID: 11400000, guid: e83b2dae76f3cb8498d38ae02adf6069, type: 2}
+  ambienceStartChannel: {fileID: 11400000, guid: c3cd1d0b80095ee4c8b718e80ad360e6, type: 2}
+  ambienceStopChannel: {fileID: 11400000, guid: ab4ce6ccdd9272f40865dc0f3ea414f5, type: 2}
 --- !u!1 &525343042
 GameObject:
   m_ObjectHideFlags: 0
@@ -755,6 +758,10 @@ MonoBehaviour:
   - id: iris_10
     clip: {fileID: 8300000, guid: 8550afcc7adb3fb4a844c345fd3df385, type: 3}
   _voiceVolume: 1
+  voiceRequestedChannel: {fileID: 11400000, guid: e8ff720647b6ccb499615a2f948aa24c, type: 2}
+  voiceStopChannel: {fileID: 11400000, guid: 5aa7745cde05ef44494dba16f7ee503e, type: 2}
+  voiceStartedChannel: {fileID: 11400000, guid: 05b1bee3d21d57949825d811c2c52b81, type: 2}
+  voiceFinishedChannel: {fileID: 11400000, guid: 79616d30fb2b7a447800d44a3677efe4, type: 2}
 --- !u!1 &842420229
 GameObject:
   m_ObjectHideFlags: 0
@@ -1546,9 +1553,15 @@ MonoBehaviour:
   _punctuationPause: 0.15
   _choicesContainer: {fileID: 2010786404}
   _choiceButtonPrefab: {fileID: 6055909685654179660, guid: d63b7cc087b643d4d8f23917721edf68, type: 3}
-  _timerBarContainer: {fileID: 2008522634}
-  _timerBarFill: {fileID: 525343044}
   _deadAirScreen: {fileID: 1368168747}
+  dialogueLineChannel: {fileID: 11400000, guid: 9b3ef4ea06dedeb42b5ce6ab2a7cf81a, type: 2}
+  speakerLineChannel: {fileID: 11400000, guid: 3b43cc61739e33641a743e318e47e197, type: 2}
+  choicesPresentedChannel: {fileID: 11400000, guid: ee10e70c17d14f74ebf9c5c687b63fd4, type: 2}
+  uiCommandChannel: {fileID: 11400000, guid: 440825b3b7aef214794ad257d991e308, type: 2}
+  storyEndChannel: {fileID: 11400000, guid: 34f28619a32fa0647a5db74668fab4a2, type: 2}
+  continueRequestedChannel: {fileID: 11400000, guid: 4b4ed52b95c17b74ba83a4635114ee7e, type: 2}
+  choiceSelectedChannel: {fileID: 11400000, guid: eb22faf631d6cb74f835e8eb5adb74df, type: 2}
+  voiceStopChannel: {fileID: 11400000, guid: 5aa7745cde05ef44494dba16f7ee503e, type: 2}
 --- !u!1 &1368168747
 GameObject:
   m_ObjectHideFlags: 0
@@ -1979,7 +1992,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _inkAsset: {fileID: 4900000, guid: b40316ad27105564caeed979f246a384, type: 3}
+  dialogueLineChannel: {fileID: 11400000, guid: 9b3ef4ea06dedeb42b5ce6ab2a7cf81a, type: 2}
+  speakerLineChannel: {fileID: 11400000, guid: 3b43cc61739e33641a743e318e47e197, type: 2}
+  choicesPresentedChannel: {fileID: 11400000, guid: ee10e70c17d14f74ebf9c5c687b63fd4, type: 2}
+  sfxRequestedChannel: {fileID: 11400000, guid: e83b2dae76f3cb8498d38ae02adf6069, type: 2}
+  ambienceStartChannel: {fileID: 11400000, guid: c3cd1d0b80095ee4c8b718e80ad360e6, type: 2}
+  ambienceStopChannel: {fileID: 11400000, guid: ab4ce6ccdd9272f40865dc0f3ea414f5, type: 2}
+  voiceRequestedChannel: {fileID: 11400000, guid: e8ff720647b6ccb499615a2f948aa24c, type: 2}
+  voiceStopChannel: {fileID: 11400000, guid: 5aa7745cde05ef44494dba16f7ee503e, type: 2}
+  uiCommandChannel: {fileID: 11400000, guid: 440825b3b7aef214794ad257d991e308, type: 2}
+  storyEndChannel: {fileID: 11400000, guid: 34f28619a32fa0647a5db74668fab4a2, type: 2}
+  voiceStartedChannel: {fileID: 11400000, guid: 05b1bee3d21d57949825d811c2c52b81, type: 2}
+  voiceFinishedChannel: {fileID: 11400000, guid: 79616d30fb2b7a447800d44a3677efe4, type: 2}
   _logToConsole: 1
+  continueRequestedChannel: {fileID: 11400000, guid: 4b4ed52b95c17b74ba83a4635114ee7e, type: 2}
+  choiceSelectedChannel: {fileID: 11400000, guid: eb22faf631d6cb74f835e8eb5adb74df, type: 2}
 --- !u!4 &1768828977
 Transform:
   m_ObjectHideFlags: 0
@@ -2117,7 +2144,7 @@ SceneRoots:
   - {fileID: 705507995}
   - {fileID: 1337660933}
   - {fileID: 1555453176}
-  - {fileID: 477392701}
   - {fileID: 1768828977}
+  - {fileID: 477392701}
   - {fileID: 797356349}
   - {fileID: 547466891}
