@@ -5,22 +5,13 @@ using DeadAir.Events;
 namespace DeadAir.Audio
 {
     /// <summary>
-    /// Gestisce la riproduzione di SFX e Ambience.
-    /// Ascolta gli eventi dai channels ScriptableObject e riproduce l'audio appropriato.
-    /// 
-    /// Responsabilità:
-    /// - Riprodurre SFX one-shot
-    /// - Gestire loop ambience (start/stop/crossfade)
-    /// - Lookup clip da dizionario
-    /// 
-    /// NON responsabile di:
-    /// - Voice/dialoghi (→ VoiceManager)
-    /// - Sync con typewriter (→ VoiceManager)
+    /// Gestisce la riproduzione di SFX e Ambience usando AudioClipLibrary SO.
+    /// Supporta Singleton cross-scene MA con ricaricamento libraries per scena.
     /// </summary>
     public class AudioManager : MonoBehaviour
     {
         // ============================================
-        // SINGLETON (semplice, per audio persistente)
+        // SINGLETON
         // ============================================
         
         public static AudioManager Instance { get; private set; }
@@ -35,11 +26,12 @@ namespace DeadAir.Audio
         [SerializeField] private AudioSource _musicSource;
         [SerializeField] private AudioSource _videoSource;
         
-        [Header("SFX Clips")]
-        [SerializeField] private SFXEntry[] _sfxClips;
+        [Header("Audio Libraries (ScriptableObject)")]
+        [Tooltip("Libraries SFX da caricare per questa scena")]
+        [SerializeField] private AudioClipLibrary[] _sfxLibraries;
         
-        [Header("Ambience Clips")]
-        [SerializeField] private AmbienceEntry[] _ambienceClips;
+        [Tooltip("Libraries Ambience da caricare per questa scena")]
+        [SerializeField] private AudioClipLibrary[] _ambienceLibraries;
         
         [Header("Settings")]
         [SerializeField] [Range(0f, 1f)] private float _sfxVolume = 1f;
@@ -47,7 +39,7 @@ namespace DeadAir.Audio
         [SerializeField] private float _ambienceFadeDuration = 1f;
         
         // ============================================
-        // EVENT CHANNELS (Dependency Injection)
+        // EVENT CHANNELS
         // ============================================
         
         [Header("Audio Event Channels (Observer)")]
@@ -64,30 +56,6 @@ namespace DeadAir.Audio
         private Coroutine _ambienceFadeCoroutine;
         
         // ============================================
-        // SERIALIZABLE STRUCTS (per Inspector)
-        // ============================================
-        
-        /// <summary>
-        /// Entry per SFX. Permette di mappare ID string a clip nell'Inspector.
-        /// </summary>
-        [System.Serializable]
-        public struct SFXEntry
-        {
-            public string id;           // es. "phone_ring", "glass_break"
-            public AudioClip clip;
-        }
-        
-        /// <summary>
-        /// Entry per Ambience.
-        /// </summary>
-        [System.Serializable]
-        public struct AmbienceEntry
-        {
-            public string id;           // es. "dispatch_night"
-            public AudioClip clip;
-        }
-        
-        // ============================================
         // UNITY LIFECYCLE
         // ============================================
         
@@ -96,19 +64,121 @@ namespace DeadAir.Audio
             // Singleton setup
             if (Instance != null && Instance != this)
             {
+                // Esiste già un AudioManager, ma questa scena potrebbe avere libraries diverse
+                // Reload le libraries invece di distruggere
+                Debug.Log($"[AudioManager] Singleton già esistente. Ricarico libraries per scena corrente.");
+                Instance.ReloadLibraries(_sfxLibraries, _ambienceLibraries);
+                Instance.ReassignChannels(sfxRequestedChannel, ambienceStartChannel, ambienceStopChannel);
                 Destroy(gameObject);
                 return;
             }
+            
             Instance = this;
             DontDestroyOnLoad(gameObject);
-
-            BuildLookupTables();
+            
             ConfigureAudioSources();
+            BuildLookupTables();
         }
         
         private void OnEnable()
         {
-            // Subscribe ai channels
+            SubscribeToChannels();
+        }
+        
+        private void OnDisable()
+        {
+            UnsubscribeFromChannels();
+        }
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        
+        private void BuildLookupTables()
+        {
+            _sfxLookup = new Dictionary<string, AudioClip>();
+            _ambienceLookup = new Dictionary<string, AudioClip>();
+            
+            LoadLibraries();
+        }
+        
+        /// <summary>
+        /// Carica tutte le libraries assegnate nell'Inspector.
+        /// </summary>
+        private void LoadLibraries()
+        {
+            // Load SFX libraries
+            if (_sfxLibraries != null)
+            {
+                foreach (var library in _sfxLibraries)
+                {
+                    if (library != null)
+                    {
+                        library.PopulateDictionary(_sfxLookup, "SFX");
+                    }
+                }
+            }
+            
+            // Load Ambience libraries
+            if (_ambienceLibraries != null)
+            {
+                foreach (var library in _ambienceLibraries)
+                {
+                    if (library != null)
+                    {
+                        library.PopulateDictionary(_ambienceLookup, "Ambience");
+                    }
+                }
+            }
+            
+            Debug.Log($"[AudioManager] Totale caricato: {_sfxLookup.Count} SFX, {_ambienceLookup.Count} Ambience");
+        }
+        
+        /// <summary>
+        /// Ricarica le libraries (chiamato quando cambia scena).
+        /// </summary>
+        public void ReloadLibraries(AudioClipLibrary[] sfxLibraries, AudioClipLibrary[] ambienceLibraries)
+        {
+            Debug.Log("[AudioManager] Reload libraries per nuova scena...");
+            
+            // Clear dictionaries esistenti
+            _sfxLookup?.Clear();
+            _ambienceLookup?.Clear();
+            
+            if (_sfxLookup == null) _sfxLookup = new Dictionary<string, AudioClip>();
+            if (_ambienceLookup == null) _ambienceLookup = new Dictionary<string, AudioClip>();
+            
+            // Load nuove libraries
+            _sfxLibraries = sfxLibraries;
+            _ambienceLibraries = ambienceLibraries;
+            
+            LoadLibraries();
+        }
+        
+        /// <summary>
+        /// Reassegna i channels (chiamato quando cambia scena).
+        /// </summary>
+        public void ReassignChannels(
+            StringEventChannel sfx,
+            StringEventChannel ambienceStart,
+            VoidEventChannel ambienceStop)
+        {
+            // Unsubscribe vecchi channels
+            UnsubscribeFromChannels();
+            
+            // Assegna nuovi channels
+            sfxRequestedChannel = sfx;
+            ambienceStartChannel = ambienceStart;
+            ambienceStopChannel = ambienceStop;
+            
+            // Subscribe nuovi channels
+            SubscribeToChannels();
+            
+            Debug.Log("[AudioManager] Channels reassegnati");
+        }
+        
+        private void SubscribeToChannels()
+        {
             if (sfxRequestedChannel != null)
                 sfxRequestedChannel.Subscribe(PlaySFX);
             
@@ -119,9 +189,8 @@ namespace DeadAir.Audio
                 ambienceStopChannel.Subscribe(StopAmbience);
         }
         
-        private void OnDisable()
+        private void UnsubscribeFromChannels()
         {
-            // Unsubscribe dai channels
             if (sfxRequestedChannel != null)
                 sfxRequestedChannel.Unsubscribe(PlaySFX);
             
@@ -130,41 +199,6 @@ namespace DeadAir.Audio
             
             if (ambienceStopChannel != null)
                 ambienceStopChannel.Unsubscribe(StopAmbience);
-        }
-        
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        
-        private void BuildLookupTables()
-        {
-            // SFX lookup
-            _sfxLookup = new Dictionary<string, AudioClip>();
-            if (_sfxClips != null)
-            {
-                foreach (var entry in _sfxClips)
-                {
-                    if (!string.IsNullOrEmpty(entry.id) && entry.clip != null)
-                    {
-                        _sfxLookup[entry.id.ToLowerInvariant()] = entry.clip;
-                    }
-                }
-            }
-            
-            // Ambience lookup
-            _ambienceLookup = new Dictionary<string, AudioClip>();
-            if (_ambienceClips != null)
-            {
-                foreach (var entry in _ambienceClips)
-                {
-                    if (!string.IsNullOrEmpty(entry.id) && entry.clip != null)
-                    {
-                        _ambienceLookup[entry.id.ToLowerInvariant()] = entry.clip;
-                    }
-                }
-            }
-            
-            Debug.Log($"[AudioManager] Loaded {_sfxLookup.Count} SFX, {_ambienceLookup.Count} Ambience clips.");
         }
         
         private void ConfigureAudioSources()
@@ -187,26 +221,15 @@ namespace DeadAir.Audio
         // SFX
         // ============================================
         
-        /// <summary>
-        /// Riproduce un SFX one-shot.
-        /// Subscribed a sfxRequestedChannel.
-        /// </summary>
         public void PlaySFX(string sfxId)
         {
-            if (string.IsNullOrEmpty(sfxId))
+            if (string.IsNullOrEmpty(sfxId) || _sfxSource == null)
                 return;
-
-            if (_sfxSource == null)
-            {
-                Debug.LogWarning("[AudioManager] _sfxSource non assegnato nell'Inspector!");
-                return;
-            }
 
             string key = sfxId.ToLowerInvariant();
 
             if (_sfxLookup.TryGetValue(key, out AudioClip clip))
             {
-                // Gestione specifica per il loop
                 if (key == "dead_air")
                 {
                     _sfxSource.clip = clip;
@@ -218,9 +241,7 @@ namespace DeadAir.Audio
                 }
                 else
                 {
-                    // Comportamento standard per suoni one-off
                     _sfxSource.PlayOneShot(clip, _sfxVolume);
-                    
                     Debug.Log($"[AudioManager] SFX: {sfxId}");
                 }
             }
@@ -234,20 +255,10 @@ namespace DeadAir.Audio
         // AMBIENCE
         // ============================================
         
-        /// <summary>
-        /// Avvia un loop ambience con fade in.
-        /// Subscribed a ambienceStartChannel.
-        /// </summary>
         public void StartAmbience(string ambienceId)
         {
-            if (string.IsNullOrEmpty(ambienceId))
+            if (string.IsNullOrEmpty(ambienceId) || _ambienceSource == null)
                 return;
-
-            if (_ambienceSource == null)
-            {
-                Debug.LogWarning("[AudioManager] _ambienceSource non assegnato nell'Inspector!");
-                return;
-            }
 
             string key = ambienceId.ToLowerInvariant();
 
@@ -268,10 +279,6 @@ namespace DeadAir.Audio
             }
         }
         
-        /// <summary>
-        /// Ferma l'ambience con fade out.
-        /// Subscribed a ambienceStopChannel.
-        /// </summary>
         public void StopAmbience()
         {
             if (_ambienceSource == null || !_ambienceSource.isPlaying)
@@ -286,7 +293,7 @@ namespace DeadAir.Audio
         }
         
         // ============================================
-        // COROUTINES
+        // COROUTINES (unchanged)
         // ============================================
         
         private System.Collections.IEnumerator FadeAmbienceIn(float from, float to, float duration)
@@ -318,7 +325,7 @@ namespace DeadAir.Audio
         }
         
         // ============================================
-        // PUBLIC API
+        // PUBLIC API (unchanged)
         // ============================================
         
         public void SetSFXVolume(float volume)
@@ -329,7 +336,7 @@ namespace DeadAir.Audio
         public void SetAmbienceVolume(float volume)
         {
             _ambienceVolume = Mathf.Clamp01(volume);
-            if (_ambienceSource.isPlaying && _ambienceFadeCoroutine == null)
+            if (_ambienceSource != null && _ambienceSource.isPlaying && _ambienceFadeCoroutine == null)
             {
                 _ambienceSource.volume = _ambienceVolume;
             }

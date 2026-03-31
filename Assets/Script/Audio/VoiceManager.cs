@@ -5,16 +5,9 @@ using DeadAir.Events;
 namespace DeadAir.Audio
 {
     /// <summary>
-    /// Gestisce la riproduzione delle voci dei personaggi.
-    /// Separato da AudioManager per gestire la sincronizzazione con il typewriter.
-    /// Comunica via Event Channels (ScriptableObject).
-    /// 
-    /// Responsabilità:
-    /// - Riprodurre clip vocali per ID (es. "iris_01")
-    /// - Notificare quando la voce finisce (per sync UI)
-    /// - Lookup clip da dizionario
-    /// 
-    /// Design: Le clip vocali sono mappate per ID esplicito dal tag #voice:xxx
+    /// Gestisce la riproduzione delle voci dei personaggi usando AudioClipLibrary SO.
+    /// Supporta multiple libraries per speaker diversi.
+    /// NON Singleton: ogni scena ha il proprio VoiceManager.
     /// </summary>
     public class VoiceManager : MonoBehaviour
     {
@@ -25,8 +18,9 @@ namespace DeadAir.Audio
         [Header("Audio Source")]
         [SerializeField] private AudioSource _voiceSource;
         
-        [Header("Voice Clips")]
-        [SerializeField] private VoiceEntry[] _voiceClips;
+        [Header("Voice Libraries (ScriptableObject)")]
+        [Tooltip("Libraries voice da caricare per questa scena (es. Voice_Iris, Voice_Ward)")]
+        [SerializeField] private AudioClipLibrary[] _voiceLibraries;
         
         [Header("Settings")]
         [SerializeField] [Range(0f, 1f)] private float _voiceVolume = 1f;
@@ -49,21 +43,6 @@ namespace DeadAir.Audio
         
         private Dictionary<string, AudioClip> _voiceLookup;
         private bool _isPlaying;
-        
-        // ============================================
-        // SERIALIZABLE STRUCT
-        // ============================================
-        
-        /// <summary>
-        /// Entry per voice clip.
-        /// ID deve corrispondere al tag nel file ink (es. "iris_01")
-        /// </summary>
-        [System.Serializable]
-        public struct VoiceEntry
-        {
-            public string id;       // es. "iris_01", "iris_02"
-            public AudioClip clip;
-        }
         
         // ============================================
         // UNITY LIFECYCLE
@@ -117,18 +96,29 @@ namespace DeadAir.Audio
         {
             _voiceLookup = new Dictionary<string, AudioClip>();
             
-            if (_voiceClips != null)
+            LoadLibraries();
+        }
+        
+        /// <summary>
+        /// Carica tutte le voice libraries assegnate nell'Inspector.
+        /// </summary>
+        private void LoadLibraries()
+        {
+            if (_voiceLibraries == null || _voiceLibraries.Length == 0)
             {
-                foreach (var entry in _voiceClips)
+                Debug.LogWarning("[VoiceManager] Nessuna Voice Library assegnata!");
+                return;
+            }
+            
+            foreach (var library in _voiceLibraries)
+            {
+                if (library != null)
                 {
-                    if (!string.IsNullOrEmpty(entry.id) && entry.clip != null)
-                    {
-                        _voiceLookup[entry.id.ToLowerInvariant()] = entry.clip;
-                    }
+                    library.PopulateDictionary(_voiceLookup, "Voice");
                 }
             }
             
-            Debug.Log($"[VoiceManager] Loaded {_voiceLookup.Count} voice clips.");
+            Debug.Log($"[VoiceManager] Totale caricato: {_voiceLookup.Count} voice clips");
         }
         
         private void ConfigureAudioSource()
