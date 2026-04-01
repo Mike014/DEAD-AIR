@@ -13,6 +13,16 @@
 - [DEAD AIR - Scena 1](https://docs.google.com/document/d/1AXRHu3tBfq9NYKhXJQnWr8wlpkkn18FYZ-0bdrgomoQ/edit?tab=t.0)
 ---
 
+![Copertina del progetto](Logo.png)
+## DEAD AIR — Documenti informativi riguardo il Concept di gioco
+- [DEAD_AIR_STORY_ARCHITECTURE](https://docs.google.com/document/d/1fydiwT6h3TYMvayOMdnoAXsqVEKncyPSYEauwPCPtxY/edit?tab=t.0#heading=h.n71ap8gqp083)
+- [DEAD_AIR_CONCEPT](https://docs.google.com/document/d/19lzCzj4KluC-9Iayi9aIQmPGrRT4fcdhMTGNEUfs3tg/edit?tab=t.0)
+- [DEAD AIR - Scena 1](https://docs.google.com/document/d/1AXRHu3tBfq9NYKhXJQnWr8wlpkkn18FYZ-0bdrgomoQ/edit?tab=t.0)
+- [DEAD AIR - Funzioni e Ruolo Observer Pattern](https://docs.google.com/document/d/1A6QolH8ZfMb7hAVnUAIxZwwX6ydyHTyNzoR31VUbvjw/edit?tab=t.0#heading=h.a0snu6hph57e)
+- [DEAD AIR - Main Menu State Pattern](https://docs.google.com/document/d/1MioJsxffXy8tvQUZbcWDAk_i-x8QAun_lKWvMFsGUeM/edit?tab=t.0)
+
+---
+
 ## INDICE
 1. [Cosa Fa Il Gioco](#1-cosa-fa-il-gioco)
 2. [Come Funziona Il Codice](#2-come-funziona-il-codice)
@@ -597,5 +607,6 @@ Unity auto-applica **import settings** in base alla cartella del file:
 **Versione Documento**: 2.1 (Marzo 2026)  
 **Architettura**: Event Channels + Audio Libraries (ScriptableObject)  
 **Ultima Modifica**: 31 Marzo 2026
+**Versione Build**: 0.7
 ```
 
