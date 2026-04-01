@@ -11,7 +11,8 @@ public class MenuButtons : MonoBehaviour
     
     public void OnStartGameClicked()
     {
-        _menuController.StartGame();
+        // Apre il pannello di selezione chiamate
+        _menuController.PushState(new StartState(_menuController));
     }
     
     public void OnOptionsClicked()
@@ -30,7 +31,21 @@ public class MenuButtons : MonoBehaviour
     }
     
     // ============================================
-    // BOTTONI OPTIONS / CREDITS
+    // BOTTONI START PANEL (selezione chiamate)
+    // ============================================
+    
+    public void OnDemoClicked()
+    {
+        _menuController.LoadDemo();
+    }
+    
+    public void OnScene1Clicked()
+    {
+        _menuController.LoadScene1();
+    }
+    
+    // ============================================
+    // BOTTONI BACK (Options / Credits / Start)
     // ============================================
     
     public void OnBackClicked()
