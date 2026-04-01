@@ -15,6 +15,7 @@
 - [DEAD AIR - Scena 1](https://docs.google.com/document/d/1AXRHu3tBfq9NYKhXJQnWr8wlpkkn18FYZ-0bdrgomoQ/edit?tab=t.0)
 - [DEAD AIR - Funzioni e Ruolo Observer Pattern](https://docs.google.com/document/d/1A6QolH8ZfMb7hAVnUAIxZwwX6ydyHTyNzoR31VUbvjw/edit?tab=t.0#heading=h.a0snu6hph57e)
 - [DEAD AIR - Main Menu State Pattern](https://docs.google.com/document/d/1MioJsxffXy8tvQUZbcWDAk_i-x8QAun_lKWvMFsGUeM/edit?tab=t.0)
+- [DEAD_AIR's Feedback](https://docs.google.com/document/d/138J-VQ95gjfxAhUd8jjPW2hQqQFlGHhzHVayldid5QM/edit?tab=t.0)
 
 ---
 
