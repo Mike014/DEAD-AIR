@@ -592,5 +592,6 @@ Unity auto-applica **import settings** in base alla cartella del file:
 **Versione Documento**: 2.1 (Marzo 2026)  
 **Architettura**: Event Channels + Audio Libraries (ScriptableObject)  
 **Ultima Modifica**: 31 Marzo 2026
+**Versione Build**: 0.7
 ```
 
