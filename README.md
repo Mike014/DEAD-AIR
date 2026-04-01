@@ -6,11 +6,6 @@
 
 *Dead Air — A project by Michele Grimaldi | E-C-H-O SYSTEMS*
 
-![Copertina del progetto](Logo.png)
-## DEAD AIR — Documenti informativi riguardo il Concept di gioco
-- [DEAD_AIR_STORY_ARCHITECTURE](https://docs.google.com/document/d/1fydiwT6h3TYMvayOMdnoAXsqVEKncyPSYEauwPCPtxY/edit?tab=t.0#heading=h.n71ap8gqp083)
-- [DEAD_AIR_CONCEPT](https://docs.google.com/document/d/19lzCzj4KluC-9Iayi9aIQmPGrRT4fcdhMTGNEUfs3tg/edit?tab=t.0)
-- [DEAD AIR - Scena 1](https://docs.google.com/document/d/1AXRHu3tBfq9NYKhXJQnWr8wlpkkn18FYZ-0bdrgomoQ/edit?tab=t.0)
 ---
 
 ![Copertina del progetto](Logo.png)
