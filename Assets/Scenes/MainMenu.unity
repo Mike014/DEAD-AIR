@@ -3206,7 +3206,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Demo
+  m_text: Iris
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 95022155faad7a94ab399fc1c7c1d1aa, type: 2}
   m_sharedMaterial: {fileID: 8504683694866948854, guid: 95022155faad7a94ab399fc1c7c1d1aa, type: 2}
@@ -4173,7 +4173,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Scene1
+  m_text: The Bear
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 95022155faad7a94ab399fc1c7c1d1aa, type: 2}
   m_sharedMaterial: {fileID: 8504683694866948854, guid: 95022155faad7a94ab399fc1c7c1d1aa, type: 2}
