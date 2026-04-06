@@ -1,4 +1,6 @@
+#nullable enable
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace DeadAir.Narrative
 {
@@ -30,27 +32,52 @@ namespace DeadAir.Narrative
 
         /// <summary>
         /// Risultato del parsing di una linea di dialogo.
-        /// Struct invece di class: zero allocazioni heap, 
-        /// ideale per chiamate frequenti.
+        /// 
+        /// READONLY STRUCT perché:
+        /// - Immutabile dopo creazione (no mutazioni accidentali di copie)
+        /// - Passata frequentemente tra metodi (zero allocazioni heap)
+        /// - Dati piccoli e temporanei (semantica di valore)
+        /// 
+        /// PROPRIETÀ NULLABLE perché:
+        /// - Speaker/Voice/SFX possono essere assenti
+        /// - Nullable esplicita l'opzionalità (meglio di stringa vuota)
+        /// - Elimina ridondanza dei bool HasX (derivati automaticamente)
         /// </summary>
-        public struct ParsedLine
+        public readonly struct ParsedLine
         {
-            public string Text;
-            public string Speaker;          // null se nessuno speaker
-            public bool HasSpeaker;
+            // ============================================
+            // DATI PRIMARI
+            // ============================================
 
-            public string SFX;              // null se nessun sfx
-            public bool HasSFX;
+            public string Text { get; init; }
 
-            public string Ambience;         // null se nessuna ambience
-            public bool HasAmbience;
-            public bool IsAmbienceStop;     // true se #amb:stop
+            // Speaker
+            public string? Speaker { get; init; }
+            public SpeakerType SpeakerType { get; init; }
 
-            public string UICommand;        // null se nessun comando UI
-            public bool HasUICommand;
+            // Audio
+            public string? VoiceId { get; init; }
+            public string? SFX { get; init; }
+            public string? Ambience { get; init; }
+            public bool IsAmbienceStop { get; init; }
 
-            public string VoiceId;          // null se nessun voice clip
-            public bool HasVoice;
+            // UI
+            public UICommandType UICommand { get; init; }
+
+            /// <summary>True se la linea ha uno speaker identificato.</summary>
+            public bool HasSpeaker => Speaker != null;
+
+            /// <summary>True se la linea ha un voice clip associato.</summary>
+            public bool HasVoice => VoiceId != null;
+
+            /// <summary>True se la linea ha un effetto sonoro.</summary>
+            public bool HasSFX => SFX != null;
+
+            /// <summary>True se la linea ha ambience (start o stop).</summary>
+            public bool HasAmbience => Ambience != null || IsAmbienceStop;
+
+            /// <summary>True se la linea ha un comando UI.</summary>
+            public bool HasUICommand => UICommand != UICommandType.None;
         }
 
         // ============================================
@@ -69,69 +96,153 @@ namespace DeadAir.Narrative
             {
                 Text = lineText?.Trim() ?? string.Empty,
                 Speaker = null,
-                HasSpeaker = false,
-                SFX = null,
-                HasSFX = false,
-                Ambience = null,
-                HasAmbience = false,
-                IsAmbienceStop = false,
-                UICommand = null,
-                HasUICommand = false,
+                SpeakerType = SpeakerType.Unknown,
                 VoiceId = null,
-                HasVoice = false
+                SFX = null,
+                Ambience = null,
+                IsAmbienceStop = false,
+                UICommand = UICommandType.None
             };
 
             if (tags == null || tags.Count == 0)
                 return result;
 
-            // Single pass attraverso i tag
+           // Single pass attraverso i tag
             foreach (string tag in tags)
             {
                 string trimmedTag = tag.Trim().ToLowerInvariant();
 
-                // Speaker tag
+                // ============================================
+                // SPEAKER TAG
+                // ============================================
                 if (trimmedTag.StartsWith(TAG_SPEAKER))
                 {
-                    result.Speaker = ExtractValue(trimmedTag, TAG_SPEAKER);
-                    result.HasSpeaker = !string.IsNullOrEmpty(result.Speaker);
+                    string? speakerValue = ExtractValue(trimmedTag, TAG_SPEAKER);
+                    
+                    SpeakerType speakerType = speakerValue?.ToLowerInvariant() switch
+                    {
+                        "ward" => SpeakerType.Ward,
+                        "iris" => SpeakerType.Iris,
+                        _ => SpeakerType.Unknown
+                    };
+
+                    // Crea nuova struct copiando tutti i campi (C# 9 compatibile)
+                    result = new ParsedLine
+                    {
+                        Text = result.Text,
+                        Speaker = speakerValue,
+                        SpeakerType = speakerType,
+                        VoiceId = result.VoiceId,
+                        SFX = result.SFX,
+                        Ambience = result.Ambience,
+                        IsAmbienceStop = result.IsAmbienceStop,
+                        UICommand = result.UICommand
+                    };
                 }
-                // Voice tag
+                // ============================================
+                // VOICE TAG
+                // ============================================
                 else if (trimmedTag.StartsWith(TAG_VOICE))
                 {
-                    result.VoiceId = ExtractValue(trimmedTag, TAG_VOICE);
-                    result.HasVoice = !string.IsNullOrEmpty(result.VoiceId);
+                    string? voiceValue = ExtractValue(trimmedTag, TAG_VOICE);
+                    
+                    result = new ParsedLine
+                    {
+                        Text = result.Text,
+                        Speaker = result.Speaker,
+                        SpeakerType = result.SpeakerType,
+                        VoiceId = voiceValue,
+                        SFX = result.SFX,
+                        Ambience = result.Ambience,
+                        IsAmbienceStop = result.IsAmbienceStop,
+                        UICommand = result.UICommand
+                    };
                 }
-                // SFX tag
+                // ============================================
+                // SFX TAG
+                // ============================================
                 else if (trimmedTag.StartsWith(TAG_SFX))
                 {
-                    result.SFX = ExtractValue(trimmedTag, TAG_SFX);
-                    result.HasSFX = !string.IsNullOrEmpty(result.SFX);
+                    string? sfxValue = ExtractValue(trimmedTag, TAG_SFX);
+                    
+                    result = new ParsedLine
+                    {
+                        Text = result.Text,
+                        Speaker = result.Speaker,
+                        SpeakerType = result.SpeakerType,
+                        VoiceId = result.VoiceId,
+                        SFX = sfxValue,
+                        Ambience = result.Ambience,
+                        IsAmbienceStop = result.IsAmbienceStop,
+                        UICommand = result.UICommand
+                    };
                 }
-                // Ambience tag
+                // ============================================
+                // AMBIENCE TAG
+                // ============================================
                 else if (trimmedTag.StartsWith(TAG_AMB))
                 {
-                    string ambienceValue = ExtractValue(trimmedTag, TAG_AMB);
+                    string? ambienceValue = ExtractValue(trimmedTag, TAG_AMB);
 
-                    if (ambienceValue == "stop")
+                    if (ambienceValue?.ToLowerInvariant() == "stop")
                     {
-                        result.IsAmbienceStop = true;
-                        result.HasAmbience = true;
+                        result = new ParsedLine
+                        {
+                            Text = result.Text,
+                            Speaker = result.Speaker,
+                            SpeakerType = result.SpeakerType,
+                            VoiceId = result.VoiceId,
+                            SFX = result.SFX,
+                            Ambience = result.Ambience,
+                            IsAmbienceStop = true,  // Solo questo cambia
+                            UICommand = result.UICommand
+                        };
                     }
                     else
                     {
-                        result.Ambience = ambienceValue;
-                        result.HasAmbience = !string.IsNullOrEmpty(result.Ambience);
+                        result = new ParsedLine
+                        {
+                            Text = result.Text,
+                            Speaker = result.Speaker,
+                            SpeakerType = result.SpeakerType,
+                            VoiceId = result.VoiceId,
+                            SFX = result.SFX,
+                            Ambience = ambienceValue,  // Solo questo cambia
+                            IsAmbienceStop = result.IsAmbienceStop,
+                            UICommand = result.UICommand
+                        };
                     }
                 }
-                // UI tag
+                // ============================================
+                // UI TAG
+                // ============================================
                 else if (trimmedTag.StartsWith(TAG_UI))
                 {
-                    result.UICommand = ExtractValue(trimmedTag, TAG_UI);
-                    result.HasUICommand = !string.IsNullOrEmpty(result.UICommand);
+                    string? uiValue = ExtractValue(trimmedTag, TAG_UI);
+                    
+                    UICommandType commandType = uiValue?.ToLowerInvariant() switch
+                    {
+                        "dead_air_screen" => UICommandType.DeadAirScreen,
+                        "return_to_menu" => UICommandType.ReturnToMenu,
+                        _ => UICommandType.None
+                    };
+
+                    result = new ParsedLine
+                    {
+                        Text = result.Text,
+                        Speaker = result.Speaker,
+                        SpeakerType = result.SpeakerType,
+                        VoiceId = result.VoiceId,
+                        SFX = result.SFX,
+                        Ambience = result.Ambience,
+                        IsAmbienceStop = result.IsAmbienceStop,
+                        UICommand = commandType
+                    };
                 }
             }
 
             return result;
+
         }
 
         // ============================================
@@ -146,12 +257,17 @@ namespace DeadAir.Narrative
         /// - Zero allocazioni array
         /// - Più veloce per operazione semplice
         /// </summary>
-        private static string ExtractValue(string tag, string prefix)
+        private static string? ExtractValue(string tag, string prefix)
         {
             if (tag.Length <= prefix.Length)
-                return string.Empty;
+            {
+                return null;
+            }
 
-            return tag.Substring(prefix.Length).Trim();
+            string value = tag.Substring(prefix.Length).Trim();
+
+            // Stringa vuota dopo trim = nessun valore reale
+            return value.Length > 0 ? value : null;
         }
 
         /// <summary>

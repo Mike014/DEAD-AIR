@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using Ink.Runtime;
 using DeadAir.Events;
+using DeadAir.Narrative;
 
 namespace DeadAir.UI
 {
@@ -99,16 +100,16 @@ namespace DeadAir.UI
             // Subscribe agli eventi via channels (DialogueUI è Observer)
             if (dialogueLineChannel != null)
                 dialogueLineChannel.Subscribe(HandleDialogueLine);
-            
+
             if (speakerLineChannel != null)
                 speakerLineChannel.Subscribe(HandleSpeakerLine);
-            
+
             if (choicesPresentedChannel != null)
                 choicesPresentedChannel.Subscribe(HandleChoicesPresented);
-            
+
             if (uiCommandChannel != null)
                 uiCommandChannel.Subscribe(HandleUICommand);
-            
+
             if (storyEndChannel != null)
                 storyEndChannel.Subscribe(HandleStoryEnd);
         }
@@ -118,16 +119,16 @@ namespace DeadAir.UI
             // Unsubscribe per evitare memory leak - CRITICO
             if (dialogueLineChannel != null)
                 dialogueLineChannel.Unsubscribe(HandleDialogueLine);
-            
+
             if (speakerLineChannel != null)
                 speakerLineChannel.Unsubscribe(HandleSpeakerLine);
-            
+
             if (choicesPresentedChannel != null)
                 choicesPresentedChannel.Unsubscribe(HandleChoicesPresented);
-            
+
             if (uiCommandChannel != null)
                 uiCommandChannel.Unsubscribe(HandleUICommand);
-            
+
             if (storyEndChannel != null)
                 storyEndChannel.Unsubscribe(HandleStoryEnd);
         }
@@ -156,16 +157,30 @@ namespace DeadAir.UI
 
         /// <summary>
         /// Chiamato quando StoryManager pubblica evento SpeakerLine.
+        /// PROBLEMA: Il canale usa ancora (string speaker, string text).
+        /// 
+        /// SOLUZIONE TEMPORANEA: Parse string → SpeakerType enum qui.
+        /// SOLUZIONE IDEALE (futuro): Canale usa direttamente SpeakerType.
         /// </summary>
         private void HandleSpeakerLine(string speaker, string text)
         {
             ClearChoices();
 
-            Color textColor = speaker.ToLowerInvariant() switch
+            // Parse string → SpeakerType enum
+            SpeakerType speakerType = speaker?.ToLowerInvariant() switch
             {
-                "ward" => _wardColor,
-                "iris" => _irisColor,
-                _ => _narratorColor
+                "ward" => SpeakerType.Ward,
+                "iris" => SpeakerType.Iris,
+                _ => SpeakerType.Unknown
+            };
+
+            // Switch type-safe su enum
+            Color textColor = speakerType switch
+            {
+                SpeakerType.Ward => _wardColor,
+                SpeakerType.Iris => _irisColor,
+                SpeakerType.Narrator => _narratorColor,
+                _ => _narratorColor  // Unknown/default
             };
 
             ShowText(text, textColor);
@@ -179,29 +194,49 @@ namespace DeadAir.UI
         {
             StopTypewriter();
             HideContinueIndicator();
-            
+
             // Pulisci il testo precedente (opzionale - easter egg binario)
             if (_dialogueText != null)
                 _dialogueText.text = "01101001 01110100 01110011 00100000 01111001 01101111 01110101 01110010 00100000 01100110 01100001 01110101 01101100 01110100";
-            
+
             ShowChoices(choices);
         }
 
         /// <summary>
         /// Chiamato quando StoryManager pubblica comando UI.
+        /// PROBLEMA: Il canale usa ancora string invece di UICommandType.
+        /// 
+        /// SOLUZIONE TEMPORANEA: Parse string → UICommandType enum qui.
+        /// SOLUZIONE IDEALE (futuro): Canale usa direttamente UICommandType.
         /// </summary>
         private void HandleUICommand(string command)
         {
-            switch (command.ToLowerInvariant())
+            // Parse string → UICommandType enum
+            UICommandType commandType = command?.ToLowerInvariant() switch
             {
-                case "dead_air_screen":
+                "dead_air_screen" => UICommandType.DeadAirScreen,
+                "return_to_menu" => UICommandType.ReturnToMenu,
+                _ => UICommandType.None
+            };
+
+            // Switch type-safe su enum (exhaustive)
+            switch (commandType)
+            {
+                case UICommandType.DeadAirScreen:
                     ShowDeadAirScreen();
                     break;
-                case "return_to_menu":
+
+                case UICommandType.ReturnToMenu:
                     QuitApplication();
                     break;
-                default:
+
+                case UICommandType.None:
                     Debug.LogWarning($"[DialogueUI] Comando UI sconosciuto: {command}");
+                    break;
+
+                default:
+                    // Questo caso non dovrebbe mai verificarsi se l'enum è completo
+                    Debug.LogError($"[DialogueUI] UICommandType non gestito: {commandType}");
                     break;
             }
         }
@@ -362,11 +397,11 @@ namespace DeadAir.UI
             {
                 // Pubblica evento: player vuole continuare
                 HideContinueIndicator();
-                
+
                 // Stop voice clip in corso
                 if (voiceStopChannel != null)
                     voiceStopChannel.RaiseEvent();
-                
+
                 // Richiesta continue a StoryManager
                 if (continueRequestedChannel != null)
                     continueRequestedChannel.RaiseEvent();
@@ -408,7 +443,7 @@ namespace DeadAir.UI
         private void OnChoiceClicked(int index)
         {
             ClearChoices();
-            
+
             // Pubblica evento: player ha scelto
             if (choiceSelectedChannel != null)
                 choiceSelectedChannel.RaiseEvent(index);
@@ -457,10 +492,10 @@ namespace DeadAir.UI
         private void ReturnToMenu()
         {
             Debug.Log("[DialogueUI] Ritorno al menu...");
-            
+
             // NOTA: ClearAllListeners non esiste più in architettura channel-based
             // Unsubscribe viene gestito automaticamente da OnDisable()
-            
+
             UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
         }
 
