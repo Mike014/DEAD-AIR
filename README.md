@@ -121,9 +121,6 @@ Assets/
 │   └── dead_air_demo_en.ink         → Storia principale
 │
 ├── Audio
-│ 
-└── Ink/
-    └── dead_air_demo_en.ink         → Storia principale
 ```
 
 ---
