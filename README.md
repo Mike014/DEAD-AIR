@@ -27,6 +27,7 @@
 4. [Event Channels](#4-event-channels-sistema-di-comunicazione)
 5. [Come Scrivere Una Storia](#5-come-scrivere-una-storia)
 6. [Come Aggiungere Un Nuovo Tag](#6-come-aggiungere-un-nuovo-tag-es-musica)
+   - [Come Aggiungere Un Nuovo Comando UI](#65-come-aggiungere-un-nuovo-comando-ui-type-safe-enums)
 7. [Schema Visivo Sistema](#7-schema-visivo-sistema)
 8. [Sistemi e Ruoli](#8-sistemi-e-i-loro-ruoli)
 9. [Troubleshooting](#9-troubleshooting)
@@ -86,6 +87,8 @@ Il testo appare sullo schermo + parte l'audio della voce
 | `#amb:{file}` | Musica ambiente (loop) | `#amb:dispatch_night` |
 | `#amb:stop` | Ferma musica ambiente | `#amb:stop` |
 | `#ui:{comando}` | Comando speciale UI | `#ui:dead_air_screen` |
+
+**Nota (da Marzo 2026)**: I tag `#speaker` e `#ui` usano internamente **enum type-safe** (`SpeakerType`, `UICommandType`) per prevenire errori e migliorare manutenibilità. Vedi [Sezione 6.5](#65-come-aggiungere-un-nuovo-comando-ui-type-safe-enums) per dettagli.
 
 ---
 
@@ -410,6 +413,285 @@ Ward feels something is wrong.
 
 ---
 
+## 6.5 COME AGGIUNGERE UN NUOVO COMANDO UI (Type-Safe Enums)
+
+### Cos'è un Comando UI?
+
+I comandi UI (`#ui:{comando}`) sono istruzioni speciali nel file Ink che attivano comportamenti UI come:
+- Mostrare schermate speciali (`#ui:dead_air_screen`)
+- Tornare al menu (`#ui:return_to_menu`)
+- Mostrare overlay, transizioni, o altri effetti UI custom
+
+**Da Marzo 2026**, i comandi UI usano **enum type-safe** invece di stringhe fragili. Questo previene typo e rende il codice più manutenibile.
+
+---
+
+### Anatomia del Sistema
+
+```
+FILE INK:  #ui:dead_air_screen
+    ↓
+DialogueParser.cs: "dead_air_screen" (string) → UICommandType.DeadAirScreen (enum)
+    ↓
+StoryManager.cs: UICommandType.DeadAirScreen → "dead_air_screen" (string per canale)
+    ↓
+UICommandChannel: Pubblica "dead_air_screen"
+    ↓
+DialogueUI.cs: "dead_air_screen" (string) → UICommandType.DeadAirScreen (enum)
+    ↓
+DialogueUI.cs: Switch su enum → ShowDeadAirScreen()
+```
+
+**Perché questo flusso?**
+- Event Channels usano ancora `string` per backward compatibility
+- Parser e UI convertono in enum per **type safety** e **exhaustiveness check**
+- Un typo nel file Ink genera warning a runtime (es. "Unknown UI command: dead_air")
+
+---
+
+### STEP 1 — Aggiungi Nuovo Valore all'Enum
+
+**File**: `Assets/Scripts/Narrative/DialogueParser.cs`
+
+**TROVA** l'enum `UICommandType` (circa riga 28):
+
+```csharp
+public enum UICommandType
+{
+    None = 0,           // Default
+    DeadAirScreen = 1,  // #ui:dead_air_screen
+    ReturnToMenu = 2    // #ui:return_to_menu
+}
+```
+
+**AGGIUNGI** il nuovo comando (esempio: schermata di pausa):
+
+```csharp
+public enum UICommandType
+{
+    None = 0,           // Default
+    DeadAirScreen = 1,  // #ui:dead_air_screen
+    ReturnToMenu = 2,   // #ui:return_to_menu
+    PauseScreen = 3     // #ui:pause_screen  ← NUOVO COMANDO
+}
+```
+
+**⚠️ REGOLE IMPORTANTI**:
+- `None = 0` deve essere **sempre** il primo valore (default sicuro)
+- Numera progressivamente: 1, 2, 3, 4...
+- Aggiungi commento con il tag Ink corrispondente
+
+---
+
+### STEP 2 — Aggiungi Parsing della Stringa
+
+**File**: `Assets/Scripts/Narrative/DialogueParser.cs`
+
+**TROVA** il metodo `ParseTags` (circa riga 180), blocco UI TAG:
+
+```csharp
+else if (trimmedTag.StartsWith(TAG_UI))
+{
+    string? uiValue = ExtractValue(trimmedTag, TAG_UI);
+    
+    result = new ParsedLine
+    {
+        // ... altri campi ...
+        UICommand = uiValue?.ToLowerInvariant() switch
+        {
+            "dead_air_screen" => UICommandType.DeadAirScreen,
+            "return_to_menu" => UICommandType.ReturnToMenu,
+            _ => UICommandType.None
+        }
+    };
+}
+```
+
+**AGGIUNGI** il case per il nuovo comando:
+
+```csharp
+UICommand = uiValue?.ToLowerInvariant() switch
+{
+    "dead_air_screen" => UICommandType.DeadAirScreen,
+    "return_to_menu" => UICommandType.ReturnToMenu,
+    "pause_screen" => UICommandType.PauseScreen,  // ← AGGIUNGI QUESTO
+    _ => UICommandType.None
+}
+```
+
+---
+
+### STEP 3 — Converti Enum → String in StoryManager
+
+**File**: `Assets/Scripts/Narrative/StoryManager.cs`
+
+**TROVA** il metodo `ProcessLine` (circa riga 233), blocco UI EVENTS:
+
+```csharp
+if (parsed.HasUICommand)
+{
+    string? commandString = parsed.UICommand switch
+    {
+        UICommandType.DeadAirScreen => "dead_air_screen",
+        UICommandType.ReturnToMenu => "return_to_menu",
+        _ => null
+    };
+    
+    if (commandString != null)
+        uiCommandChannel.RaiseEvent(commandString);
+}
+```
+
+**AGGIUNGI** il case per il nuovo comando:
+
+```csharp
+string? commandString = parsed.UICommand switch
+{
+    UICommandType.DeadAirScreen => "dead_air_screen",
+    UICommandType.ReturnToMenu => "return_to_menu",
+    UICommandType.PauseScreen => "pause_screen",  // ← AGGIUNGI QUESTO
+    _ => null
+};
+```
+
+---
+
+### STEP 4 — Implementa Logica UI
+
+**File**: `Assets/Scripts/UI/DialogueUI.cs`
+
+**TROVA** il metodo `HandleUICommand` (circa riga 193):
+
+```csharp
+private void HandleUICommand(string command)
+{
+    UICommandType commandType = command?.ToLowerInvariant() switch
+    {
+        "dead_air_screen" => UICommandType.DeadAirScreen,
+        "return_to_menu" => UICommandType.ReturnToMenu,
+        _ => UICommandType.None
+    };
+
+    switch (commandType)
+    {
+        case UICommandType.DeadAirScreen:
+            ShowDeadAirScreen();
+            break;
+
+        case UICommandType.ReturnToMenu:
+            QuitApplication();
+            break;
+
+        case UICommandType.None:
+            Debug.LogWarning($"[DialogueUI] Comando UI sconosciuto: {command}");
+            break;
+    }
+}
+```
+
+**AGGIUNGI** il parsing e il case:
+
+```csharp
+// STEP 4.1 — Aggiungi parsing
+UICommandType commandType = command?.ToLowerInvariant() switch
+{
+    "dead_air_screen" => UICommandType.DeadAirScreen,
+    "return_to_menu" => UICommandType.ReturnToMenu,
+    "pause_screen" => UICommandType.PauseScreen,  // ← AGGIUNGI QUESTO
+    _ => UICommandType.None
+};
+
+// STEP 4.2 — Aggiungi case
+switch (commandType)
+{
+    case UICommandType.DeadAirScreen:
+        ShowDeadAirScreen();
+        break;
+
+    case UICommandType.ReturnToMenu:
+        QuitApplication();
+        break;
+
+    case UICommandType.PauseScreen:  // ← AGGIUNGI QUESTO
+        ShowPauseScreen();
+        break;
+
+    case UICommandType.None:
+        Debug.LogWarning($"[DialogueUI] Comando UI sconosciuto: {command}");
+        break;
+}
+```
+
+**STEP 4.3 — Crea il metodo handler**:
+
+```csharp
+private void ShowPauseScreen()
+{
+    if (_pauseScreen != null)
+    {
+        StopTypewriter();
+        HideContinueIndicator();
+        _pauseScreen.SetActive(true);
+        Debug.Log("[DialogueUI] Pause screen attivo");
+    }
+}
+```
+
+---
+
+### STEP 5 — Usa nel File Ink
+
+```ink
+=== critical_moment ===
+Ward, you need to make a decision. Now.
+
+* [Pause and think]
+    # ui:pause_screen
+    → END
+```
+
+**Fatto!** Il comando è ora type-safe end-to-end.
+
+---
+
+### Vantaggi del Sistema Enum
+
+| Aspetto | Prima (Stringhe) | Dopo (Enum) |
+|---------|------------------|-------------|
+| **Typo Protection** | ❌ `"dead_air_screeen"` = silent fail | ✅ Compile error se enum sbagliato |
+| **Refactoring** | ❌ Find/Replace manuale | ✅ Rename automatico IDE |
+| **Exhaustiveness** | ❌ Switch può mancare casi | ✅ Compilatore avvisa se manca un case |
+| **Autocomplete** | ❌ Nessuno | ✅ IDE suggerisce valori enum |
+| **Debugging** | ❌ "Unknown command: X" | ✅ Stacktrace preciso + enum value |
+
+---
+
+### Checklist Aggiunta Nuovo Comando UI
+
+- [ ] **STEP 1**: Aggiungi valore a `UICommandType` enum (DialogueParser.cs)
+- [ ] **STEP 2**: Aggiungi parsing string → enum (DialogueParser.cs, `ParseTags`)
+- [ ] **STEP 3**: Aggiungi conversione enum → string (StoryManager.cs, `ProcessLine`)
+- [ ] **STEP 4**: Aggiungi parsing + case (DialogueUI.cs, `HandleUICommand`)
+- [ ] **STEP 5**: Implementa metodo handler (DialogueUI.cs, es. `ShowPauseScreen`)
+- [ ] **TEST**: Usa `#ui:{comando}` in file Ink e verifica funzionamento
+
+**Tempo stimato**: 10 minuti per comando.
+
+---
+
+### Note Tecniche
+
+**Perché 4 punti di modifica?**
+- **DialogueParser**: Converte stringa Ink → enum (single source of truth)
+- **StoryManager**: Converte enum → stringa per Event Channel (legacy compatibility)
+- **DialogueUI**: Converte stringa → enum per type safety + implementa logica
+
+**Futuro**: Migrare Event Channels a usare `UICommandType` direttamente eliminerebbe STEP 3 e 4.1.
+
+**Pattern Simile**: Usa la stessa strategia per `SpeakerType` enum se aggiungi nuovi personaggi.
+
+---
+
 ## 7. SCHEMA VISIVO SISTEMA
 
 ```
@@ -522,8 +804,11 @@ private void OnDisable()
 - [x] Sistema Audio Libraries (ScriptableObject-based)
 - [x] Singleton AudioManager con hot-reload per scene
 - [x] Ottimizzazione formati audio (ADPCM, Vorbis, Streaming)
+- [x] Type-Safe Enums per Speaker e UI Commands (Aprile 2026)
+- [x] Refactoring DialogueParser: readonly struct, nullable strings, proprietà derivate
 
 **Da Fare**:
+- [ ] Typed Event Channels (SpeakerType, UICommandType nativi)
 - [ ] Auto-populate Libraries da cartelle (Editor script)
 - [ ] Sistema salvataggio progressi
 - [ ] Menu principale completo
@@ -597,9 +882,9 @@ Unity auto-applica **import settings** in base alla cartella del file:
 
 ---
 
-**Versione Documento**: 2.1 (Marzo 2026)  
-**Architettura**: Event Channels + Audio Libraries (ScriptableObject)  
-**Ultima Modifica**: 31 Marzo 2026
-**Versione Build**: 0.7
+**Versione Documento**: 2.2 (Aprile 2026)  
+**Architettura**: Event Channels + Audio Libraries (ScriptableObject) + Type-Safe Enums  
+**Ultima Modifica**: 06 Aprile 2026  
+**Versione Build**: 0.8 (Refactoring C# Types)
 ```
 

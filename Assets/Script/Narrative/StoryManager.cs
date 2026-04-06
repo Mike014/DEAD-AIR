@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections.Generic;
 using UnityEngine;
 using Ink.Runtime;
@@ -82,7 +83,7 @@ namespace DeadAir.Narrative
             // Subscribe agli eventi usando i channels iniettati
             if (continueRequestedChannel != null)
                 continueRequestedChannel.Subscribe(HandleContinueRequested);
-            
+
             if (choiceSelectedChannel != null)
                 choiceSelectedChannel.Subscribe(HandleChoiceSelected);
         }
@@ -92,7 +93,7 @@ namespace DeadAir.Narrative
             // Unsubscribe per prevenire memory leak
             if (continueRequestedChannel != null)
                 continueRequestedChannel.Unsubscribe(HandleContinueRequested);
-            
+
             if (choiceSelectedChannel != null)
                 choiceSelectedChannel.Unsubscribe(HandleChoiceSelected);
         }
@@ -228,10 +229,18 @@ namespace DeadAir.Narrative
 
             // === UI EVENTS (via Channels) ===
 
-            if (parsed.HasUICommand && uiCommandChannel != null)
+            if (parsed.HasUICommand)
             {
-                uiCommandChannel.RaiseEvent(parsed.UICommand);
-                Log($"  → UI Command: {parsed.UICommand}");
+                // Converti enum → string per backward compatibility con canale esistente
+                string? commandString = parsed.UICommand switch
+                {
+                    UICommandType.DeadAirScreen => "dead_air_screen",
+                    UICommandType.ReturnToMenu => "return_to_menu",
+                    _ => null  // Casi futuri o UICommandType.None
+                };
+
+                if (commandString != null)
+                    uiCommandChannel.RaiseEvent(commandString);
             }
 
             // === DIALOGUE EVENTS (via Channels) ===
@@ -318,7 +327,7 @@ namespace DeadAir.Narrative
         private void HandleStoryEnd()
         {
             Log("=== FINE STORIA ===");
-            
+
             if (storyEndChannel != null)
                 storyEndChannel.RaiseEvent();
         }
@@ -353,13 +362,20 @@ namespace DeadAir.Narrative
 
         /// <summary>
         /// Restituisce il valore di una variabile ink.
+        /// Restituisce null se: story non inizializzata, variabile non esiste, cast fallisce.
         /// </summary>
-        public T GetVariable<T>(string variableName)
+        public T? GetVariable<T>(string variableName)
         {
-            if (!_isInitialized) return default;
+            if (!_isInitialized)
+                return default;
+
             try
             {
-                return (T)_story.variablesState[variableName];
+                object? value = _story.variablesState[variableName];
+                if (value == null)
+                    return default;
+
+                return (T)value;
             }
             catch (System.Exception e)
             {
@@ -390,7 +406,7 @@ namespace DeadAir.Narrative
         // ============================================
         // CHANNELS MANCANTI (Aggiunti sopra come SerializeFields)
         // ============================================
-        
+
         [Header("Input Events (StoryManager è anche Observer)")]
         [SerializeField] private VoidEventChannel continueRequestedChannel;
         [SerializeField] private IntEventChannel choiceSelectedChannel;
