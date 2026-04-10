@@ -1955,7 +1955,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e46bf1f0e5ee2974085de2ee1a8deaf2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _inkAsset: {fileID: 4900000, guid: b37bb9a9040d2b34b93156a1f477b28d, type: 3}
+  _inkAsset: {fileID: 4900000, guid: e6c398f7eca94a24a8e5acde93468c90, type: 3}
   dialogueLineChannel: {fileID: 11400000, guid: 9b3ef4ea06dedeb42b5ce6ab2a7cf81a, type: 2}
   speakerLineChannel: {fileID: 11400000, guid: 3b43cc61739e33641a743e318e47e197, type: 2}
   choicesPresentedChannel: {fileID: 11400000, guid: ee10e70c17d14f74ebf9c5c687b63fd4, type: 2}
