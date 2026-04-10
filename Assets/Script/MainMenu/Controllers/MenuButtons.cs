@@ -43,6 +43,11 @@ public class MenuButtons : MonoBehaviour
     {
         _menuController.LoadScene1();
     }
+
+    public void OnSceneILoveYouClicked()
+    {
+        _menuController.LoadDemoGameJam();
+    }
     
     // ============================================
     // BOTTONI BACK (Options / Credits / Start)
