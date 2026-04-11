@@ -288,9 +288,6 @@ ORFEO: I never told you either.
 
 - EURIDICE: We never really said it.
 
-# ui:return_to_menu
-
-
 -> END
 
 === branch_euridice_defensive ===
@@ -406,7 +403,4 @@ EURIDICE: I have to go...
 		EURIDICE: I know.
 		EURIDICE: But it's not enough.
 		
-		# ui:return_to_menu
-
-
 - -> END
