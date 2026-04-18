@@ -48,7 +48,7 @@ Sei un operatore 911 negli anni '90. Rispondi a chiamate di emergenza che divent
 2. Ascolti e leggi il dialogo
 3. Scegli come rispondere
 4. La storia prosegue in base alle tue scelte
-**Nota**: Unity ottimizza automaticamente gli audio in base alla cartella (vedi Sezione 13).
+- **Nota**: Unity ottimizza automaticamente gli audio in base alla cartella (vedi Sezione 13).
 
 ---
 
