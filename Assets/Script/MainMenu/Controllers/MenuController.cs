@@ -142,6 +142,13 @@ public class MenuController : MonoBehaviour
         SceneManager.LoadScene("Scene1");
     }
 
+    public void LoadDemoGameJam()
+    {
+        Debug.Log("[MenuController] Caricamento ILoveYou");
+        StopAllMenuAudio();
+        SceneManager.LoadScene("ILoveYou");
+    }
+
     // ============================================
     // QUIT GAME
     // ============================================

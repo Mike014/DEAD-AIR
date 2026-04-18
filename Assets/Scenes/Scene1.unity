@@ -1015,7 +1015,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1458181626
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1198,27 +1198,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _voiceSource: {fileID: 252901159}
-  _voiceClips:
-  - id: iris_01
-    clip: {fileID: 8300000, guid: 2dad74fd63cb9f24f9e78ce3047f13b9, type: 3}
-  - id: iris_02
-    clip: {fileID: 8300000, guid: 64e11083087e838419c9810c53c08467, type: 3}
-  - id: iris_03
-    clip: {fileID: 8300000, guid: df208a16125eb8d40ab298e4b9b050bc, type: 3}
-  - id: iris_04
-    clip: {fileID: 8300000, guid: e6ee4e03d1af92f44b0b34e03bda342c, type: 3}
-  - id: iris_05
-    clip: {fileID: 8300000, guid: 668a0e5388cd91341b85714f53995e36, type: 3}
-  - id: iris_06
-    clip: {fileID: 8300000, guid: ad8995f13455b3a44b8cca8432569697, type: 3}
-  - id: iris_07
-    clip: {fileID: 8300000, guid: d9e79bd87d57b1a47976c19a0a97b689, type: 3}
-  - id: iris_08
-    clip: {fileID: 8300000, guid: 455fa02e1d598744cb09fd02e62a20c7, type: 3}
-  - id: iris_09
-    clip: {fileID: 8300000, guid: 2f1b91df84cbab24c9170f3475466e2c, type: 3}
-  - id: iris_10
-    clip: {fileID: 8300000, guid: 8550afcc7adb3fb4a844c345fd3df385, type: 3}
+  _voiceLibraries: []
   _voiceVolume: 1
   voiceRequestedChannel: {fileID: 11400000, guid: e8ff720647b6ccb499615a2f948aa24c, type: 2}
   voiceStopChannel: {fileID: 11400000, guid: 5aa7745cde05ef44494dba16f7ee503e, type: 2}
@@ -1907,12 +1887,8 @@ MonoBehaviour:
   _ambienceSource: {fileID: 1815168935}
   _musicSource: {fileID: 0}
   _videoSource: {fileID: 0}
-  _sfxClips:
-  - id: drawer_open
-    clip: {fileID: 8300000, guid: 15b5ca8aad0631d459981ec3762e37a6, type: 3}
-  _ambienceClips:
-  - id: dispatch_night
-    clip: {fileID: 8300000, guid: 0e0be50c97453b94885fb8228c4055fb, type: 3}
+  _sfxLibraries: []
+  _ambienceLibraries: []
   _sfxVolume: 0.758
   _ambienceVolume: 0.783
   _ambienceFadeDuration: 0.55

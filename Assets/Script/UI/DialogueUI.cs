@@ -78,6 +78,7 @@ namespace DeadAir.UI
         private bool _skipRequested;
         private List<ChoiceButton> _activeChoiceButtons = new List<ChoiceButton>();
         private bool _choicesVisible;
+        private string _lastDialogueLine = "";
 
         // ============================================
         // UNITY LIFECYCLE
@@ -192,14 +193,22 @@ namespace DeadAir.UI
         /// </summary>
         private void HandleChoicesPresented(IReadOnlyList<Choice> choices)
         {
+            Debug.Log($"[DialogueUI] HandleChoicesPresented - Testo corrente: '{_dialogueText.text}'");
+
             StopTypewriter();
             HideContinueIndicator();
 
             // Pulisci il testo precedente (opzionale - easter egg binario)
+            // if (_dialogueText != null)
+            //     _dialogueText.text = "01101001 01110100 01110011 00100000 01111001 01101111 01110101 01110010 00100000 01100110 01100001 01110101 01101100 01110100";
             if (_dialogueText != null)
-                _dialogueText.text = "01101001 01110100 01110011 00100000 01111001 01101111 01110101 01110010 00100000 01100110 01100001 01110101 01101100 01110100";
+            {
+                _dialogueText.text = _lastDialogueLine;
+            }
 
             ShowChoices(choices);
+
+            Debug.Log($"[DialogueUI] Dopo ShowChoices - Testo corrente: '{_dialogueText.text}'");
         }
 
         /// <summary>
@@ -261,6 +270,8 @@ namespace DeadAir.UI
                 return;
 
             _dialogueText.color = color;
+            _lastDialogueLine = text;
+
             _typewriterCoroutine = StartCoroutine(TypewriterEffect(text));
         }
 
