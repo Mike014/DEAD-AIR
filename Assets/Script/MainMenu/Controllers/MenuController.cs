@@ -149,6 +149,13 @@ public class MenuController : MonoBehaviour
         SceneManager.LoadScene("ILoveYou");
     }
 
+    public void LoadDemoGameEyeJam()
+    {
+        Debug.Log("[MenuController] Caricamento NULLCarrier");
+        StopAllMenuAudio();
+        SceneManager.LoadScene("Scene_NULLCARRIER");
+    }
+
     // ============================================
     // QUIT GAME
     // ============================================
@@ -164,3 +171,6 @@ public class MenuController : MonoBehaviour
 #endif
     }
 }
+
+// TODO: Refactor con StoryDefinitionSO — ricevere SO invece di stringa,
+// configurare ink asset e nome scena dall'Inspector.

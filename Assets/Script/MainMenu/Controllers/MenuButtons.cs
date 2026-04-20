@@ -48,6 +48,11 @@ public class MenuButtons : MonoBehaviour
     {
         _menuController.LoadDemoGameJam();
     }
+
+    public void OnSceneNULLCARRIER()
+    {
+        _menuController.LoadDemoGameEyeJam();
+    }
     
     // ============================================
     // BOTTONI BACK (Options / Credits / Start)
@@ -59,3 +64,7 @@ public class MenuButtons : MonoBehaviour
         _menuController.PopState();
     }
 }
+
+// TODO: Refactor con StoryDefinitionSO — un SO per storia,
+// zero metodi aggiuntivi per ogni nuova storia.
+
