@@ -1,6 +1,6 @@
-# DEAD AIR — Documentazione Tecnica
+# DEAD AIR — Technical Documentation
 
-**Genere**: Horror Narrativo  
+**Genre**: Narrative Horror  
 **Engine**: Unity 2021 LTS+  
 **Narrative Engine**: Ink (Inkle)
 
@@ -8,122 +8,122 @@
 
 ---
 
-![Copertina del progetto](Logo.png)
-## DEAD AIR — Documenti informativi riguardo il Concept di gioco
+![Project Cover](Logo.png)
+## DEAD AIR — Game Concept Reference Documents
 - [DEAD_AIR_STORY_ARCHITECTURE](https://docs.google.com/document/d/1fydiwT6h3TYMvayOMdnoAXsqVEKncyPSYEauwPCPtxY/edit?tab=t.0#heading=h.n71ap8gqp083)
 - [DEAD_AIR_CONCEPT](https://docs.google.com/document/d/19lzCzj4KluC-9Iayi9aIQmPGrRT4fcdhMTGNEUfs3tg/edit?tab=t.0)
-- [DEAD AIR - Scena 1](https://docs.google.com/document/d/1AXRHu3tBfq9NYKhXJQnWr8wlpkkn18FYZ-0bdrgomoQ/edit?tab=t.0)
-- [DEAD AIR - Funzioni e Ruolo Observer Pattern](https://docs.google.com/document/d/1A6QolH8ZfMb7hAVnUAIxZwwX6ydyHTyNzoR31VUbvjw/edit?tab=t.0#heading=h.a0snu6hph57e)
+- [DEAD AIR - Scene 1](https://docs.google.com/document/d/1AXRHu3tBfq9NYKhXJQnWr8wlpkkn18FYZ-0bdrgomoQ/edit?tab=t.0)
+- [DEAD AIR - Observer Pattern Functions and Role](https://docs.google.com/document/d/1A6QolH8ZfMb7hAVnUAIxZwwX6ydyHTyNzoR31VUbvjw/edit?tab=t.0#heading=h.a0snu6hph57e)
 - [DEAD AIR - Main Menu State Pattern](https://docs.google.com/document/d/1MioJsxffXy8tvQUZbcWDAk_i-x8QAun_lKWvMFsGUeM/edit?tab=t.0)
-- [DEAD_AIR's Feedback](https://docs.google.com/document/d/138J-VQ95gjfxAhUd8jjPW2hQqQFlGHhzHVayldid5QM/edit?tab=t.0)
+- [DEAD AIR's Feedback](https://docs.google.com/document/d/138J-VQ95gjfxAhUd8jjPW2hQqQFlGHhzHVayldid5QM/edit?tab=t.0)
 - [DEAD AIR - Light GDD](https://docs.google.com/document/d/1gGWbE4u4KHXm7_cr_XzGU_ay5Biud0Npwt2-_DqQq9Y/edit?tab=t.0#heading=h.a1t2pnmr2g2)
 
 ---
 
-## INDICE
-1. [Cosa Fa Il Gioco](#1-cosa-fa-il-gioco)
-2. [Come Funziona Il Codice](#2-come-funziona-il-codice)
-3. [Struttura File](#3-struttura-file)
+## TABLE OF CONTENTS
+1. [What the Game Does](#1-what-the-game-does)
+2. [How the Code Works](#2-how-the-code-works)
+3. [File Structure](#3-file-structure)
    - [Audio System Architecture](#35-audio-system-architecture-scriptableobject-libraries)
-4. [Event Channels](#4-event-channels-sistema-di-comunicazione)
-5. [Come Scrivere Una Storia](#5-come-scrivere-una-storia)
-6. [Come Aggiungere Un Nuovo Tag](#6-come-aggiungere-un-nuovo-tag-es-musica)
-   - [Come Aggiungere Un Nuovo Comando UI](#65-come-aggiungere-un-nuovo-comando-ui-type-safe-enums)
-7. [Schema Visivo Sistema](#7-schema-visivo-sistema)
-8. [Sistemi e Ruoli](#8-sistemi-e-i-loro-ruoli)
+4. [Event Channels](#4-event-channels-communication-system)
+5. [How to Write a Story](#5-how-to-write-a-story)
+6. [How to Add a New Tag](#6-how-to-add-a-new-tag-eg-music)
+   - [How to Add a New UI Command](#65-how-to-add-a-new-ui-command-type-safe-enums)
+7. [System Visual Schema](#7-system-visual-schema)
+8. [Systems and Their Roles](#8-systems-and-their-roles)
 9. [Troubleshooting](#9-troubleshooting)
-10. [Riferimenti Rapidi](#10-riferimenti-rapidi)
-11. [Prossimi Miglioramenti](#11-prossimi-miglioramenti)
-12. [Contatti](#12-contatti)
+10. [Quick Reference](#10-quick-reference)
+11. [Upcoming Improvements](#11-upcoming-improvements)
+12. [Contact](#12-contact)
 13. [Audio Optimization](#13-audio-optimization)
 
 ---
 
-## 1. COSA FA IL GIOCO
+## 1. WHAT THE GAME DOES
 
-Sei un operatore 911 negli anni '90. Rispondi a chiamate di emergenza che diventano sempre più inquietanti.
+You are a 911 operator in the 1990s. You answer emergency calls that grow increasingly disturbing.
 
 **Gameplay**:
-1. Scegli una chiamata dal menu
-2. Ascolti e leggi il dialogo
-3. Scegli come rispondere
-4. La storia prosegue in base alle tue scelte
-- **Nota**: Unity ottimizza automaticamente gli audio in base alla cartella (vedi Sezione 13).
+1. Choose a call from the menu
+2. Listen and read the dialogue
+3. Choose how to respond
+4. The story continues based on your choices
+- **Note**: Unity automatically optimizes audio based on folder location (see Section 13).
 
 ---
 
-## 2. COME FUNZIONA IL CODICE
+## 2. HOW THE CODE WORKS
 
-### 2.1 Architettura Base
+### 2.1 Base Architecture
 
-Il gioco usa un sistema **tag-driven**: scrivi la storia in file `.ink`, aggiungi tag speciali, e il gioco reagisce automaticamente.
+The game uses a **tag-driven** system: you write the story in `.ink` files, add special tags, and the game reacts automatically.
 
 ```
-FILE INK (storia + tag)
+INK FILE (story + tags)
     ↓
-PARSER (legge i tag)
+PARSER (reads the tags)
     ↓
-CHANNELS (comunicazione tra sistemi)
+CHANNELS (inter-system communication)
     ↓
 MANAGER (audio, UI, voice)
     ↓
-EFFETTO NEL GIOCO
+IN-GAME EFFECT
 ```
 
-**Esempio pratico**:
+**Practical example**:
 ```ink
 911, what's your emergency? # speaker:ward # voice:ward_01
 
-Il testo appare sullo schermo + parte l'audio della voce
+Text appears on screen + character voice audio plays
 ```
 
 ---
 
-### 2.2 Tag Disponibili
+### 2.2 Available Tags
 
-| Tag | Cosa Fa | Esempio |
-|-----|---------|---------|
-| `#speaker:{nome}` | Cambia colore del testo | `#speaker:iris` |
-| `#voice:{file}` | Riproduce voce personaggio | `#voice:iris_01` |
-| `#sfx:{file}` | Effetto sonoro | `#sfx:phone_ring` |
-| `#amb:{file}` | Musica ambiente (loop) | `#amb:dispatch_night` |
-| `#amb:stop` | Ferma musica ambiente | `#amb:stop` |
-| `#ui:{comando}` | Comando speciale UI | `#ui:dead_air_screen` |
+| Tag | What It Does | Example |
+|-----|--------------|---------|
+| `#speaker:{name}` | Changes text color | `#speaker:iris` |
+| `#voice:{file}` | Plays character voice | `#voice:iris_01` |
+| `#sfx:{file}` | Sound effect | `#sfx:phone_ring` |
+| `#amb:{file}` | Ambient music (loop) | `#amb:dispatch_night` |
+| `#amb:stop` | Stops ambient music | `#amb:stop` |
+| `#ui:{command}` | Special UI command | `#ui:dead_air_screen` |
 
-**Nota (da Marzo 2026)**: I tag `#speaker` e `#ui` usano internamente **enum type-safe** (`SpeakerType`, `UICommandType`) per prevenire errori e migliorare manutenibilità. Vedi [Sezione 6.5](#65-come-aggiungere-un-nuovo-comando-ui-type-safe-enums) per dettagli.
+**Note (from March 2026)**: The `#speaker` and `#ui` tags internally use **type-safe enums** (`SpeakerType`, `UICommandType`) to prevent errors and improve maintainability. See [Section 6.5](#65-how-to-add-a-new-ui-command-type-safe-enums) for details.
 
 ---
 
-## 3. STRUTTURA FILE
+## 3. FILE STRUCTURE
 
 ```
 Assets/
 ├── Scripts/
 │   ├── Narrative/
-│   │   ├── StoryManager.cs          → Carica Ink e coordina tutto
-│   │   └── DialogueParser.cs        → Legge i tag dal file Ink
+│   │   ├── StoryManager.cs          → Loads Ink and coordinates everything
+│   │   └── DialogueParser.cs        → Reads tags from the Ink file
 │   │
 │   ├── UI/
-│   │   ├── DialogueUI.cs            → Mostra testo e scelte
-│   │   └── ChoiceButton.cs          → Bottone per le scelte
+│   │   ├── DialogueUI.cs            → Displays text and choices
+│   │   └── ChoiceButton.cs          → Button for player choices
 │   │
 │   ├── Audio/
-│   │   ├── AudioManager.cs          → SFX e Ambience
-│   │   └── VoiceManager.cs          → Voci dei personaggi
+│   │   ├── AudioManager.cs          → SFX and Ambience
+│   │   └── VoiceManager.cs          → Character voices
 │   │
 │   └── Events/
-│       ├── Channels/                → Tipi di comunicazione
+│       ├── Channels/                → Communication types
 │       │   ├── StringEventChannel.cs
 │       │   ├── VoidEventChannel.cs
-│       │   └── ... (altri)
+│       │   └── ... (others)
 │       │
-│       └── ScriptableObjects/       → Canali di comunicazione (14 file .asset)
+│       └── ScriptableObjects/       → Communication channels (14 .asset files)
 │           ├── DialogueLineChannel.asset
 │           ├── SFXRequestedChannel.asset
-│           └── ... (altri)
+│           └── ... (others)
 │
 ├── Ink/
-│   └── dead_air_demo_en.ink         → Storia principale
+│   └── dead_air_demo_en.ink         → Main story
 │
 ├── Audio
 ```
@@ -132,136 +132,136 @@ Assets/
 
 ## 3.5 AUDIO SYSTEM ARCHITECTURE (ScriptableObject Libraries)
 
-### Cos'è una Audio Library?
+### What is an Audio Library?
 
-Una **Audio Library** è un ScriptableObject che contiene una collezione di file audio con ID associati. Permette di:
-- Condividere clip audio tra scene diverse
-- Organizzare audio per categoria (SFX, Ambience, Voice)
-- Cambiare audio senza modificare codice
+An **Audio Library** is a ScriptableObject that holds a collection of audio files with associated IDs. It allows you to:
+- Share audio clips across different scenes
+- Organize audio by category (SFX, Ambience, Voice)
+- Swap audio without modifying code
 
-**Esempio**: `Voice_Demo_Iris.asset` contiene tutti i 10 clip vocali di Iris (`iris_01` → `iris_10`).
+**Example**: `Voice_Demo_Iris.asset` contains all 10 of Iris's voice clips (`iris_01` → `iris_10`).
 
-### Come Funziona
+### How It Works
 ```
-FILE INK: #voice:iris_01
+INK FILE: #voice:iris_01
     ↓
-StoryManager legge tag
+StoryManager reads tag
     ↓
-Pubblica evento VoiceRequestedChannel("iris_01")
+Raises event on VoiceRequestedChannel("iris_01")
     ↓
-VoiceManager riceve evento
+VoiceManager receives event
     ↓
-VoiceManager cerca "iris_01" in Voice_Demo_Iris.asset
+VoiceManager searches "iris_01" in Voice_Demo_Iris.asset
     ↓
-Riproduce iris_01.wav
+Plays iris_01.wav
 ```
 
-### Struttura Libraries
+### Library Structure
 
-| Library Type | Scopo | Esempio |
-|--------------|-------|---------|
-| **SFX Library** | Effetti sonori brevi | `SFX_Demo.asset` → phone_ring, glass_break |
-| **Ambience Library** | Loop ambiente | `Ambience_Demo.asset` → dispatch_night |
-| **Voice Library** | Voci personaggio | `Voice_Demo_Iris.asset` → iris_01...iris_10 |
+| Library Type | Purpose | Example |
+|--------------|---------|---------|
+| **SFX Library** | Short sound effects | `SFX_Demo.asset` → phone_ring, glass_break |
+| **Ambience Library** | Ambient loops | `Ambience_Demo.asset` → dispatch_night |
+| **Voice Library** | Character voices | `Voice_Demo_Iris.asset` → iris_01...iris_10 |
 
-### Aggiungere Audio a una Nuova Storia
+### Adding Audio for a New Story
 
-**STEP 1 — Crea Library**:
+**STEP 1 — Create Library**:
 ```
 Assets/Audio/Libraries/ → Right Click
 → Create → DEAD AIR → Audio → Audio Clip Library
-→ Rinomina: "Voice_MyStory"
+→ Rename: "Voice_MyStory"
 ```
 
-**STEP 2 — Popola Library**:
+**STEP 2 — Populate Library**:
 ```
 Voice_MyStory.asset Inspector:
 ├─ Library Name: "My Story Voice"
-├─ Description: "Voci personaggi storia X"
+├─ Description: "Character voices for story X"
 └─ Clips (Array):
     ├─ [0] id: "character_01", clip: character_01.wav
     ├─ [1] id: "character_02", clip: character_02.wav
     └─ ...
 ```
 
-**STEP 3 — Assegna a Manager**:
+**STEP 3 — Assign to Manager**:
 ```
 Scene → VoiceManager Inspector
 → Voice Libraries (Array)
 → Drag "Voice_MyStory.asset"
 ```
 
-**STEP 4 — Usa in Ink**:
+**STEP 4 — Use in Ink**:
 ```ink
 Hello there! # voice:character_01
 ```
 
-**Zero modifiche al codice C#.**
+**Zero C# code changes required.**
 
-### Vantaggi Rispetto ad Array Inspector
+### Advantages over Inspector Arrays
 
-| Approccio | Setup Nuova Storia | Riutilizzo Cross-Scene | Manutenibilità |
-|-----------|-------------------|------------------------|----------------|
-| **Array Inspector** (vecchio) | 15 min (riassegna tutto) | ❌ No (duplicazione) | ❌ Difficile |
-| **SO Libraries** (attuale) | 2 min (drag & drop) | ✅ Sì (shared) | ✅ Facile |
+| Approach | New Story Setup | Cross-Scene Reuse | Maintainability |
+|----------|----------------|-------------------|-----------------|
+| **Inspector Array** (old) | 15 min (reassign everything) | No (duplication) | Difficult |
+| **SO Libraries** (current) | 2 min (drag & drop) | Yes (shared) | Easy |
 
 ---
 
-## 4. EVENT CHANNELS (Sistema di Comunicazione)
+## 4. EVENT CHANNELS (Communication System)
 
-### 4.1 Cos'è un Event Channel?
+### 4.1 What is an Event Channel?
 
-È un "ponte di comunicazione" tra sistemi diversi. Invece di far parlare i sistemi direttamente, usiamo questi ponti.
+It is a "communication bridge" between different systems. Instead of having systems talk directly to each other, we use these bridges.
 
-**Vantaggi**:
-- I sistemi non si conoscono tra loro (puoi modificare uno senza rompere gli altri)
-- Puoi testare ogni sistema in isolamento
-- Nessun memory leak
-- Facile da debuggare dall'Inspector Unity
+**Advantages**:
+- Systems are unaware of each other (you can modify one without breaking the others)
+- Each system can be tested in isolation
+- No memory leaks
+- Easy to debug from the Unity Inspector
 
-### 4.2 Come Funziona
+### 4.2 How It Works
 
 ```
-StoryManager legge il tag #sfx:phone_ring
+StoryManager reads the tag #sfx:phone_ring
     ↓
-StoryManager pubblica l'evento sul canale "SFXRequestedChannel"
+StoryManager raises the event on the "SFXRequestedChannel"
     ↓
-AudioManager è in ascolto su quel canale
+AudioManager is listening on that channel
     ↓
-AudioManager riceve "phone_ring" e riproduce il suono
+AudioManager receives "phone_ring" and plays the sound
 ```
 
-### 4.3 Canali Esistenti (14 totali)
+### 4.3 Existing Channels (14 total)
 
-**Dialogo**:
-- `DialogueLineChannel` → Testo da mostrare
-- `SpeakerLineChannel` → Chi sta parlando + testo
-- `ChoicesPresentedChannel` → Lista di scelte disponibili
+**Dialogue**:
+- `DialogueLineChannel` → Text to display
+- `SpeakerLineChannel` → Who is speaking + text
+- `ChoicesPresentedChannel` → List of available choices
 
 **Audio**:
-- `SFXRequestedChannel` → Effetto sonoro da riprodurre
-- `AmbienceStartChannel` → Ambiente da far partire
-- `AmbienceStopChannel` → Ferma ambiente
-- `VoiceRequestedChannel` → Voce da riprodurre
-- `VoiceStopChannel` → Ferma voce
+- `SFXRequestedChannel` → Sound effect to play
+- `AmbienceStartChannel` → Ambience to start
+- `AmbienceStopChannel` → Stop ambience
+- `VoiceRequestedChannel` → Voice to play
+- `VoiceStopChannel` → Stop voice
 
-**Input Giocatore**:
-- `ContinueRequestedChannel` → Giocatore clicca per continuare
-- `ChoiceSelectedChannel` → Giocatore sceglie un'opzione
+**Player Input**:
+- `ContinueRequestedChannel` → Player clicks to continue
+- `ChoiceSelectedChannel` → Player selects an option
 
-**Altri**:
-- `UICommandChannel` → Comandi speciali UI
-- `StoryEndChannel` → Storia terminata
-- `VoiceStartedChannel` → Voce iniziata (con durata)
-- `VoiceFinishedChannel` → Voce finita
+**Other**:
+- `UICommandChannel` → Special UI commands
+- `StoryEndChannel` → Story ended
+- `VoiceStartedChannel` → Voice started (with duration)
+- `VoiceFinishedChannel` → Voice finished
 
-**Località**: `Assets/Scripts/Events/ScriptableObjects/`
+**Location**: `Assets/Scripts/Events/ScriptableObjects/`
 
 ---
 
-## 5. COME SCRIVERE UNA STORIA
+## 5. HOW TO WRITE A STORY
 
-### 5.1 Esempio File .ink Completo
+### 5.1 Complete .ink File Example
 
 ```ink
 // IRIS CALL - The Bear
@@ -298,45 +298,45 @@ I'm... I'm at home. # speaker:iris # voice:iris_03
 -> END
 ```
 
-### 5.2 Regole Naming File Audio
+### 5.2 Audio File Naming Rules
 
-| Tipo | Formato | Ottimizzazione Unity | Esempio |
-|------|---------|---------------------|---------|
-| **Voice** | `{speaker}_{numero}.wav` | ADPCM, Mono, Optimize SR | `iris_01.wav` |
-| **SFX** | `{descrizione}.wav` | ADPCM, Mono, Optimize SR | `phone_ring.wav` |
-| **Ambience** | `{luogo}.ogg` | Vorbis 70%, Streaming, Stereo | `dispatch_night.ogg` |
+| Type | Format | Unity Optimization | Example |
+|------|--------|--------------------|---------|
+| **Voice** | `{speaker}_{number}.wav` | ADPCM, Mono, Optimize SR | `iris_01.wav` |
+| **SFX** | `{description}.wav` | ADPCM, Mono, Optimize SR | `phone_ring.wav` |
+| **Ambience** | `{location}.ogg` | Vorbis 70%, Streaming, Stereo | `dispatch_night.ogg` |
 | **Music** | `{mood}.ogg` | Vorbis 80%, Streaming, Stereo | `tension_loop.ogg` |
 
-**Nota**: Unity ottimizza automaticamente gli audio in base alla cartella (vedi **Sezione 13 - Audio Optimization**).
+**Note**: Unity automatically optimizes audio based on folder location (see **Section 13 - Audio Optimization**).
 
 ---
 
-## 6. COME AGGIUNGERE UN NUOVO TAG (es. Musica)
+## 6. HOW TO ADD A NEW TAG (eg. Music)
 
-### Esempio: Voglio aggiungere `#music:tension_loop`
+### Example: Adding `#music:tension_loop`
 
-#### STEP 1 — Crea il Channel Asset
+#### STEP 1 — Create the Channel Asset
 
 ```
 Unity → Project → Assets/Scripts/Events/ScriptableObjects
 → Right Click → Create → DEAD AIR → Events → String Event Channel
-→ Rinomina: "MusicRequestedChannel"
+→ Rename: "MusicRequestedChannel"
 ```
 
-#### STEP 2 — Modifica DialogueParser.cs
+#### STEP 2 — Edit DialogueParser.cs
 
-Aggiungi in alto (dopo linea 25):
+Add at the top (after line 25):
 ```csharp
 private const string TAG_MUSIC = "music:";
 ```
 
-Aggiungi nella struct `ParsedLine` (dopo linea 60):
+Add to the `ParsedLine` struct (after line 60):
 ```csharp
 public string Music;
 public bool HasMusic;
 ```
 
-Aggiungi nel metodo `ParseTags()` (dopo linea 100):
+Add to the `ParseTags()` method (after line 100):
 ```csharp
 else if (trimmedTag.StartsWith(TAG_MUSIC))
 {
@@ -345,14 +345,14 @@ else if (trimmedTag.StartsWith(TAG_MUSIC))
 }
 ```
 
-#### STEP 3 — Modifica StoryManager.cs
+#### STEP 3 — Edit StoryManager.cs
 
-Aggiungi campo (dopo linea 50):
+Add field (after line 50):
 ```csharp
 [SerializeField] private StringEventChannel musicRequestedChannel;
 ```
 
-Aggiungi nel metodo `ProcessLine()` (dopo linea 180):
+Add to the `ProcessLine()` method (after line 180):
 ```csharp
 if (parsed.HasMusic && musicRequestedChannel != null)
 {
@@ -360,7 +360,7 @@ if (parsed.HasMusic && musicRequestedChannel != null)
 }
 ```
 
-#### STEP 4 — Crea MusicManager.cs
+#### STEP 4 — Create MusicManager.cs
 
 ```csharp
 using UnityEngine;
@@ -385,24 +385,24 @@ public class MusicManager : MonoBehaviour
     
     private void PlayMusic(string musicId)
     {
-        // Carica e riproduci la musica
+        // Load and play music
         Debug.Log($"Playing music: {musicId}");
     }
 }
 ```
 
-#### STEP 5 — Setup Unity
+#### STEP 5 — Unity Setup
 
 1. Hierarchy → Create Empty → "MusicManager"
 2. Add Component → MusicManager
 3. Inspector:
-   - Assegna AudioSource
-   - Drag "MusicRequestedChannel" nel campo
+   - Assign AudioSource
+   - Drag "MusicRequestedChannel" into the field
 
 4. StoryManager Inspector:
-   - Drag "MusicRequestedChannel" nel campo
+   - Drag "MusicRequestedChannel" into the field
 
-#### STEP 6 — Usa nel File Ink
+#### STEP 6 — Use in the Ink File
 
 ```ink
 === tense_moment ===
@@ -411,51 +411,51 @@ public class MusicManager : MonoBehaviour
 Ward feels something is wrong.
 ```
 
-**Fatto!** Tempo stimato: 30 minuti.
+**Done!** Estimated time: 30 minutes.
 
 ---
 
-## 6.5 COME AGGIUNGERE UN NUOVO COMANDO UI (Type-Safe Enums)
+## 6.5 HOW TO ADD A NEW UI COMMAND (Type-Safe Enums)
 
-### Cos'è un Comando UI?
+### What is a UI Command?
 
-I comandi UI (`#ui:{comando}`) sono istruzioni speciali nel file Ink che attivano comportamenti UI come:
-- Mostrare schermate speciali (`#ui:dead_air_screen`)
-- Tornare al menu (`#ui:return_to_menu`)
-- Mostrare overlay, transizioni, o altri effetti UI custom
+UI commands (`#ui:{command}`) are special instructions in the Ink file that trigger UI behaviors such as:
+- Showing special screens (`#ui:dead_air_screen`)
+- Returning to the menu (`#ui:return_to_menu`)
+- Showing overlays, transitions, or other custom UI effects
 
-**Da Marzo 2026**, i comandi UI usano **enum type-safe** invece di stringhe fragili. Questo previene typo e rende il codice più manutenibile.
+**From March 2026**, UI commands use **type-safe enums** instead of fragile strings. This prevents typos and makes the code more maintainable.
 
 ---
 
-### Anatomia del Sistema
+### System Anatomy
 
 ```
-FILE INK:  #ui:dead_air_screen
+INK FILE:  #ui:dead_air_screen
     ↓
 DialogueParser.cs: "dead_air_screen" (string) → UICommandType.DeadAirScreen (enum)
     ↓
-StoryManager.cs: UICommandType.DeadAirScreen → "dead_air_screen" (string per canale)
+StoryManager.cs: UICommandType.DeadAirScreen → "dead_air_screen" (string for channel)
     ↓
-UICommandChannel: Pubblica "dead_air_screen"
+UICommandChannel: Raises "dead_air_screen"
     ↓
 DialogueUI.cs: "dead_air_screen" (string) → UICommandType.DeadAirScreen (enum)
     ↓
-DialogueUI.cs: Switch su enum → ShowDeadAirScreen()
+DialogueUI.cs: Switch on enum → ShowDeadAirScreen()
 ```
 
-**Perché questo flusso?**
-- Event Channels usano ancora `string` per backward compatibility
-- Parser e UI convertono in enum per **type safety** e **exhaustiveness check**
-- Un typo nel file Ink genera warning a runtime (es. "Unknown UI command: dead_air")
+**Why this flow?**
+- Event Channels still use `string` for backward compatibility
+- Parser and UI convert to enum for **type safety** and **exhaustiveness check**
+- A typo in the Ink file generates a runtime warning (eg. "Unknown UI command: dead_air")
 
 ---
 
-### STEP 1 — Aggiungi Nuovo Valore all'Enum
+### STEP 1 — Add New Value to the Enum
 
 **File**: `Assets/Scripts/Narrative/DialogueParser.cs`
 
-**TROVA** l'enum `UICommandType` (circa riga 28):
+**FIND** the `UICommandType` enum (around line 28):
 
 ```csharp
 public enum UICommandType
@@ -466,7 +466,7 @@ public enum UICommandType
 }
 ```
 
-**AGGIUNGI** il nuovo comando (esempio: schermata di pausa):
+**ADD** the new command (example: pause screen):
 
 ```csharp
 public enum UICommandType
@@ -474,22 +474,22 @@ public enum UICommandType
     None = 0,           // Default
     DeadAirScreen = 1,  // #ui:dead_air_screen
     ReturnToMenu = 2,   // #ui:return_to_menu
-    PauseScreen = 3     // #ui:pause_screen  ← NUOVO COMANDO
+    PauseScreen = 3     // #ui:pause_screen  ← NEW COMMAND
 }
 ```
 
-**⚠️ REGOLE IMPORTANTI**:
-- `None = 0` deve essere **sempre** il primo valore (default sicuro)
-- Numera progressivamente: 1, 2, 3, 4...
-- Aggiungi commento con il tag Ink corrispondente
+**IMPORTANT RULES**:
+- `None = 0` must **always** be the first value (safe default)
+- Number progressively: 1, 2, 3, 4...
+- Add a comment with the corresponding Ink tag
 
 ---
 
-### STEP 2 — Aggiungi Parsing della Stringa
+### STEP 2 — Add String Parsing
 
 **File**: `Assets/Scripts/Narrative/DialogueParser.cs`
 
-**TROVA** il metodo `ParseTags` (circa riga 180), blocco UI TAG:
+**FIND** the `ParseTags` method (around line 180), UI TAG block:
 
 ```csharp
 else if (trimmedTag.StartsWith(TAG_UI))
@@ -498,7 +498,7 @@ else if (trimmedTag.StartsWith(TAG_UI))
     
     result = new ParsedLine
     {
-        // ... altri campi ...
+        // ... other fields ...
         UICommand = uiValue?.ToLowerInvariant() switch
         {
             "dead_air_screen" => UICommandType.DeadAirScreen,
@@ -509,25 +509,25 @@ else if (trimmedTag.StartsWith(TAG_UI))
 }
 ```
 
-**AGGIUNGI** il case per il nuovo comando:
+**ADD** the case for the new command:
 
 ```csharp
 UICommand = uiValue?.ToLowerInvariant() switch
 {
     "dead_air_screen" => UICommandType.DeadAirScreen,
     "return_to_menu" => UICommandType.ReturnToMenu,
-    "pause_screen" => UICommandType.PauseScreen,  // ← AGGIUNGI QUESTO
+    "pause_screen" => UICommandType.PauseScreen,  // ← ADD THIS
     _ => UICommandType.None
 }
 ```
 
 ---
 
-### STEP 3 — Converti Enum → String in StoryManager
+### STEP 3 — Convert Enum → String in StoryManager
 
 **File**: `Assets/Scripts/Narrative/StoryManager.cs`
 
-**TROVA** il metodo `ProcessLine` (circa riga 233), blocco UI EVENTS:
+**FIND** the `ProcessLine` method (around line 233), UI EVENTS block:
 
 ```csharp
 if (parsed.HasUICommand)
@@ -544,25 +544,25 @@ if (parsed.HasUICommand)
 }
 ```
 
-**AGGIUNGI** il case per il nuovo comando:
+**ADD** the case for the new command:
 
 ```csharp
 string? commandString = parsed.UICommand switch
 {
     UICommandType.DeadAirScreen => "dead_air_screen",
     UICommandType.ReturnToMenu => "return_to_menu",
-    UICommandType.PauseScreen => "pause_screen",  // ← AGGIUNGI QUESTO
+    UICommandType.PauseScreen => "pause_screen",  // ← ADD THIS
     _ => null
 };
 ```
 
 ---
 
-### STEP 4 — Implementa Logica UI
+### STEP 4 — Implement UI Logic
 
 **File**: `Assets/Scripts/UI/DialogueUI.cs`
 
-**TROVA** il metodo `HandleUICommand` (circa riga 193):
+**FIND** the `HandleUICommand` method (around line 193):
 
 ```csharp
 private void HandleUICommand(string command)
@@ -585,25 +585,25 @@ private void HandleUICommand(string command)
             break;
 
         case UICommandType.None:
-            Debug.LogWarning($"[DialogueUI] Comando UI sconosciuto: {command}");
+            Debug.LogWarning($"[DialogueUI] Unknown UI command: {command}");
             break;
     }
 }
 ```
 
-**AGGIUNGI** il parsing e il case:
+**ADD** the parsing and the case:
 
 ```csharp
-// STEP 4.1 — Aggiungi parsing
+// STEP 4.1 — Add parsing
 UICommandType commandType = command?.ToLowerInvariant() switch
 {
     "dead_air_screen" => UICommandType.DeadAirScreen,
     "return_to_menu" => UICommandType.ReturnToMenu,
-    "pause_screen" => UICommandType.PauseScreen,  // ← AGGIUNGI QUESTO
+    "pause_screen" => UICommandType.PauseScreen,  // ← ADD THIS
     _ => UICommandType.None
 };
 
-// STEP 4.2 — Aggiungi case
+// STEP 4.2 — Add case
 switch (commandType)
 {
     case UICommandType.DeadAirScreen:
@@ -614,17 +614,17 @@ switch (commandType)
         QuitApplication();
         break;
 
-    case UICommandType.PauseScreen:  // ← AGGIUNGI QUESTO
+    case UICommandType.PauseScreen:  // ← ADD THIS
         ShowPauseScreen();
         break;
 
     case UICommandType.None:
-        Debug.LogWarning($"[DialogueUI] Comando UI sconosciuto: {command}");
+        Debug.LogWarning($"[DialogueUI] Unknown UI command: {command}");
         break;
 }
 ```
 
-**STEP 4.3 — Crea il metodo handler**:
+**STEP 4.3 — Create the handler method**:
 
 ```csharp
 private void ShowPauseScreen()
@@ -634,14 +634,14 @@ private void ShowPauseScreen()
         StopTypewriter();
         HideContinueIndicator();
         _pauseScreen.SetActive(true);
-        Debug.Log("[DialogueUI] Pause screen attivo");
+        Debug.Log("[DialogueUI] Pause screen active");
     }
 }
 ```
 
 ---
 
-### STEP 5 — Usa nel File Ink
+### STEP 5 — Use in the Ink File
 
 ```ink
 === critical_moment ===
@@ -652,241 +652,239 @@ Ward, you need to make a decision. Now.
     → END
 ```
 
-**Fatto!** Il comando è ora type-safe end-to-end.
+**Done!** The command is now type-safe end-to-end.
 
 ---
 
-### Vantaggi del Sistema Enum
+### Enum System Advantages
 
-| Aspetto | Prima (Stringhe) | Dopo (Enum) |
-|---------|------------------|-------------|
-| **Typo Protection** | ❌ `"dead_air_screeen"` = silent fail | ✅ Compile error se enum sbagliato |
-| **Refactoring** | ❌ Find/Replace manuale | ✅ Rename automatico IDE |
-| **Exhaustiveness** | ❌ Switch può mancare casi | ✅ Compilatore avvisa se manca un case |
-| **Autocomplete** | ❌ Nessuno | ✅ IDE suggerisce valori enum |
-| **Debugging** | ❌ "Unknown command: X" | ✅ Stacktrace preciso + enum value |
-
----
-
-### Checklist Aggiunta Nuovo Comando UI
-
-- [ ] **STEP 1**: Aggiungi valore a `UICommandType` enum (DialogueParser.cs)
-- [ ] **STEP 2**: Aggiungi parsing string → enum (DialogueParser.cs, `ParseTags`)
-- [ ] **STEP 3**: Aggiungi conversione enum → string (StoryManager.cs, `ProcessLine`)
-- [ ] **STEP 4**: Aggiungi parsing + case (DialogueUI.cs, `HandleUICommand`)
-- [ ] **STEP 5**: Implementa metodo handler (DialogueUI.cs, es. `ShowPauseScreen`)
-- [ ] **TEST**: Usa `#ui:{comando}` in file Ink e verifica funzionamento
-
-**Tempo stimato**: 10 minuti per comando.
+| Aspect | Before (Strings) | After (Enums) |
+|--------|------------------|---------------|
+| **Typo Protection** | `"dead_air_screeen"` = silent fail | Compile error if wrong enum |
+| **Refactoring** | Manual Find/Replace | Automatic IDE rename |
+| **Exhaustiveness** | Switch can miss cases | Compiler warns on missing case |
+| **Autocomplete** | None | IDE suggests enum values |
+| **Debugging** | "Unknown command: X" | Precise stacktrace + enum value |
 
 ---
 
-### Note Tecniche
+### New UI Command Checklist
 
-**Perché 4 punti di modifica?**
-- **DialogueParser**: Converte stringa Ink → enum (single source of truth)
-- **StoryManager**: Converte enum → stringa per Event Channel (legacy compatibility)
-- **DialogueUI**: Converte stringa → enum per type safety + implementa logica
+- [ ] **STEP 1**: Add value to `UICommandType` enum (DialogueParser.cs)
+- [ ] **STEP 2**: Add string → enum parsing (DialogueParser.cs, `ParseTags`)
+- [ ] **STEP 3**: Add enum → string conversion (StoryManager.cs, `ProcessLine`)
+- [ ] **STEP 4**: Add parsing + case (DialogueUI.cs, `HandleUICommand`)
+- [ ] **STEP 5**: Implement handler method (DialogueUI.cs, eg. `ShowPauseScreen`)
+- [ ] **TEST**: Use `#ui:{command}` in Ink file and verify it works
 
-**Futuro**: Migrare Event Channels a usare `UICommandType` direttamente eliminerebbe STEP 3 e 4.1.
-
-**Pattern Simile**: Usa la stessa strategia per `SpeakerType` enum se aggiungi nuovi personaggi.
+**Estimated time**: 10 minutes per command.
 
 ---
 
-## 7. SCHEMA VISIVO SISTEMA
+### Technical Notes
+
+**Why 4 modification points?**
+- **DialogueParser**: Converts Ink string → enum (single source of truth)
+- **StoryManager**: Converts enum → string for Event Channel (legacy compatibility)
+- **DialogueUI**: Converts string → enum for type safety + implements logic
+
+**Future**: Migrating Event Channels to use `UICommandType` directly would eliminate STEP 3 and 4.1.
+
+**Similar Pattern**: Use the same strategy for `SpeakerType` enum when adding new characters.
+
+---
+
+## 7. SYSTEM VISUAL SCHEMA
 
 ```
-PLAYER CLICCA "CONTINUA"
+PLAYER CLICKS "CONTINUE"
     ↓
-DialogueUI pubblica su ContinueRequestedChannel
+DialogueUI raises on ContinueRequestedChannel
     ↓
-StoryManager riceve evento
+StoryManager receives event
     ↓
-StoryManager avanza la storia Ink
+StoryManager advances Ink story
     ↓
-StoryManager legge tag (#speaker:iris #voice:iris_01)
+StoryManager reads tags (#speaker:iris #voice:iris_01)
     ↓
-StoryManager pubblica su SpeakerLineChannel e VoiceRequestedChannel
+StoryManager raises on SpeakerLineChannel and VoiceRequestedChannel
     ↓
-DialogueUI riceve da SpeakerLineChannel → Mostra testo
-VoiceManager riceve da VoiceRequestedChannel → Riproduce audio
+DialogueUI receives from SpeakerLineChannel → Displays text
+VoiceManager receives from VoiceRequestedChannel → Plays audio
 ```
 
-**Nessun sistema parla direttamente con un altro → tutto passa attraverso i Channels**
+**No system talks directly to another — everything passes through the Channels**
 
 ---
 
-## 8. SISTEMI E I LORO RUOLI
+## 8. SYSTEMS AND THEIR ROLES
 
-| Sistema | Cosa Fa | Ascolta (IN) | Pubblica (OUT) |
-|---------|---------|--------------|----------------|
-| **StoryManager** | Coordina tutto, legge Ink | ContinueRequested, ChoiceSelected | DialogueLine, SpeakerLine, SFX, Ambience, Voice, UI, StoryEnd |
-| **DialogueUI** | Mostra testo e scelte | DialogueLine, SpeakerLine, ChoicesPresented, UI, StoryEnd | ContinueRequested, ChoiceSelected, VoiceStop |
-| **AudioManager** | SFX e Ambience (via Libraries) | SFXRequested, AmbienceStart, AmbienceStop | Nessuno |
-| **VoiceManager** | Voci personaggi (via Libraries) | VoiceRequested, VoiceStop | VoiceStarted, VoiceFinished |
+| System | What It Does | Listens (IN) | Raises (OUT) |
+|--------|-------------|--------------|--------------|
+| **StoryManager** | Coordinates everything, reads Ink | ContinueRequested, ChoiceSelected | DialogueLine, SpeakerLine, SFX, Ambience, Voice, UI, StoryEnd |
+| **DialogueUI** | Displays text and choices | DialogueLine, SpeakerLine, ChoicesPresented, UI, StoryEnd | ContinueRequested, ChoiceSelected, VoiceStop |
+| **AudioManager** | SFX and Ambience (via Libraries) | SFXRequested, AmbienceStart, AmbienceStop | None |
+| **VoiceManager** | Character voices (via Libraries) | VoiceRequested, VoiceStop | VoiceStarted, VoiceFinished |
 
 ---
 
 ## 9. TROUBLESHOOTING
 
-### Problema: Il tag non funziona
+### Problem: Tag not working
 
 **Checklist**:
-1. ✅ Tag scritto correttamente nel file .ink? (`#voice:iris_01` NON `# voice: iris_01`)
-2. ✅ Channel asset creato?
-3. ✅ Channel assegnato in StoryManager?
-4. ✅ Channel assegnato nel Manager che lo ascolta?
-5. ✅ File audio presente nella cartella Media?
+1. Tag written correctly in the .ink file? (`#voice:iris_01` NOT `# voice: iris_01`)
+2. Channel asset created?
+3. Channel assigned in StoryManager?
+4. Channel assigned in the listening Manager?
+5. Audio file present in the Media folder?
 
-### Problema: Audio non si sente
-
-**Checklist**:
-1. ✅ AudioManager ha l'AudioSource assegnato?
-2. ✅ AudioManager ha la Library corretta assegnata? (Inspector → SFX Libraries / Ambience Libraries)
-3. ✅ La Library contiene il clip con l'ID corretto? (Apri Library asset → verifica ID)
-4. ✅ Nome file corrisponde all'ID nella Library? (`#sfx:phone_ring` → ID "phone_ring" in Library)
-5. ✅ Volume AudioSource > 0?
-6. ✅ Console mostra `[AudioClipLibrary] X → N clip caricati`?
-
-**Se Console mostra `[AudioManager] Totale caricato: 0 SFX`**:
-- Verifica che la Library sia assegnata nell'Inspector di AudioManager
-- Verifica che la Library contenga clip (non sia vuota)
-
-### Problema: Testo non appare
+### Problem: No audio playing
 
 **Checklist**:
-1. ✅ DialogueUI ha il TextMeshPro assegnato nel campo `_dialogueText`?
-2. ✅ DialogueUI ha il channel `dialogueLineChannel` assegnato?
-3. ✅ Canvas è attivo nella scena?
+1. AudioManager has an AudioSource assigned?
+2. AudioManager has the correct Library assigned? (Inspector → SFX Libraries / Ambience Libraries)
+3. Does the Library contain the clip with the correct ID? (Open Library asset → verify ID)
+4. Does the file name match the ID in the Library? (`#sfx:phone_ring` → ID "phone_ring" in Library)
+5. AudioSource Volume > 0?
+6. Console shows `[AudioClipLibrary] X → N clips loaded`?
+
+**If Console shows `[AudioManager] Total loaded: 0 SFX`**:
+- Verify the Library is assigned in AudioManager's Inspector
+- Verify the Library contains clips (is not empty)
+
+### Problem: Text not appearing
+
+**Checklist**:
+1. DialogueUI has TextMeshPro assigned in the `_dialogueText` field?
+2. DialogueUI has the `dialogueLineChannel` assigned?
+3. Canvas is active in the scene?
 
 ---
 
-## 10. RIFERIMENTI RAPIDI
+## 10. QUICK REFERENCE
 
-### File Importanti da Conoscere
+### Key Files to Know
 
-| File | Cosa Contiene |
-|------|---------------|
-| `DialogueParser.cs` | Parsing di tutti i tag |
-| `StoryManager.cs` | Coordinazione generale, avanzamento storia |
-| `DialogueUI.cs` | Visualizzazione testo e scelte |
-| `AudioManager.cs` | SFX e Ambience |
-| `VoiceManager.cs` | Voci personaggi |
+| File | What It Contains |
+|------|-----------------|
+| `DialogueParser.cs` | Parsing of all tags |
+| `StoryManager.cs` | General coordination, story advancement |
+| `DialogueUI.cs` | Text and choice display |
+| `AudioManager.cs` | SFX and Ambience |
+| `VoiceManager.cs` | Character voices |
 
-### Convenzioni Codice
+### Code Conventions
 
-- **Campi serializzati**: `[SerializeField] private NomeType _nomeCampo;`
-- **Metodi pubblici**: `PascalCase` (es. `PlayMusic`)
-- **Metodi privati**: `PascalCase` (es. `HandleMusicRequested`)
-- **Event handlers**: Prefisso `Handle` (es. `HandleDialogueLine`)
-- **Costanti**: `ALL_CAPS` (es. `TAG_MUSIC`)
+- **Serialized fields**: `[SerializeField] private TypeName _fieldName;`
+- **Public methods**: `PascalCase` (eg. `PlayMusic`)
+- **Private methods**: `PascalCase` (eg. `HandleMusicRequested`)
+- **Event handlers**: `Handle` prefix (eg. `HandleDialogueLine`)
+- **Constants**: `ALL_CAPS` (eg. `TAG_MUSIC`)
 
 ### Lifecycle Pattern
 
 ```csharp
 private void OnEnable()
 {
-    // Subscribe ai channels qui
+    // Subscribe to channels here
     channel.Subscribe(Handler);
 }
 
 private void OnDisable()
 {
-    // SEMPRE Unsubscribe per evitare memory leak
+    // ALWAYS Unsubscribe to avoid memory leaks
     channel.Unsubscribe(Handler);
 }
 ```
 
 ---
 
-## 11. PROSSIMI MIGLIORAMENTI
+## 11. UPCOMING IMPROVEMENTS
 
-**Completati** ✅:
-- [x] Sistema Audio Libraries (ScriptableObject-based)
-- [x] Singleton AudioManager con hot-reload per scene
-- [x] Ottimizzazione formati audio (ADPCM, Vorbis, Streaming)
-- [x] Type-Safe Enums per Speaker e UI Commands (Aprile 2026)
-- [x] Refactoring DialogueParser: readonly struct, nullable strings, proprietà derivate
+**Completed**:
+- [x] Audio Libraries system (ScriptableObject-based)
+- [x] Singleton AudioManager with hot-reload across scenes
+- [x] Audio format optimization (ADPCM, Vorbis, Streaming)
+- [x] Type-Safe Enums for Speaker and UI Commands (April 2026)
+- [x] DialogueParser refactoring: readonly struct, nullable strings, derived properties
 
-**Da Fare**:
-- [ ] Typed Event Channels (SpeakerType, UICommandType nativi)
-- [ ] Auto-populate Libraries da cartelle (Editor script)
-- [ ] Sistema salvataggio progressi
-- [ ] Menu principale completo
-- [ ] Sistema multiple storie (menu selezione)
-- [ ] Library Validation Tool (check duplicate IDs)
+**To Do**:
+- [ ] Typed Event Channels (native SpeakerType, UICommandType)
+- [ ] Auto-populate Libraries from folders (Editor script)
+- [ ] Save progress system
+- [ ] Full main menu
+- [ ] Multiple stories system (selection menu)
+- [ ] Library Validation Tool (duplicate ID check)
 
-**Possibili Nuovi Tag**:
-- `#music:{id}` → Musica di background
-- `#camera_shake:{intensity}` → Scuote la camera
-- `#fade:{type}` → Transizioni schermo
+**Possible New Tags**:
+- `#music:{id}` → Background music
+- `#camera_shake:{intensity}` → Camera shake
+- `#fade:{type}` → Screen transitions
 
 ---
 
-## 12. CONTATTI
+## 12. CONTACT
 
 **Developer**: Michele Grimaldi  
 **Studio**: E-C-H-O SYSTEMS  
-**Progetto**: DEAD AIR
+**Project**: DEAD AIR
 
 ---
 
 ## 13. AUDIO OPTIMIZATION
 
-### Unity Import Settings per Tipo
+### Unity Import Settings by Type
 
-DEAD AIR usa ottimizzazioni specifiche per tipo audio seguendo Unity best practices:
+DEAD AIR uses type-specific optimizations following Unity best practices:
 
-| Tipo | Load Type | Compression | Sample Rate | Mono/Stereo | Memoria |
-|------|-----------|-------------|-------------|-------------|---------|
+| Type | Load Type | Compression | Sample Rate | Mono/Stereo | Memory |
+|------|-----------|-------------|-------------|-------------|--------|
 | **Voice** | Decompress On Load | ADPCM | Optimize (~22 kHz) | Mono | ~120 KB per 5s |
 | **SFX** | Decompress On Load | ADPCM | Optimize (~22 kHz) | Mono | ~50 KB per 2s |
 | **Ambience** | Streaming | Vorbis 70% | 44.1 kHz | Stereo | ~200 KB buffer |
 | **Music** | Streaming | Vorbis 80% | 44.1 kHz | Stereo | ~200 KB buffer |
 
-### Perché Queste Scelte?
+### Why These Choices?
 
-**ADPCM per Voice/SFX**:
-- Compressione 3.5x vs PCM
-- CPU overhead minimo (+5% vs PCM)
-- Qualità 95% (dialoghi tollerano artefatti)
-- Zero latency (decompresso in RAM)
+**ADPCM for Voice/SFX**:
+- 3.5x compression vs PCM
+- Minimal CPU overhead (+5% vs PCM)
+- 95% quality (dialogue tolerates artifacts)
+- Zero latency (decompressed in RAM)
 
-**Vorbis Streaming per Ambience/Music**:
-- Compressione ~10x vs PCM
-- Memoria fixed (~200 KB buffer, non dipende da durata clip)
-- Streaming da disco (no spike memoria)
-- Qualità 90-95% (accettabile per loop ambiente)
+**Vorbis Streaming for Ambience/Music**:
+- ~10x compression vs PCM
+- Fixed memory (~200 KB buffer, independent of clip duration)
+- Streaming from disk (no memory spikes)
+- 90-95% quality (acceptable for ambient loops)
 
 **Optimize Sample Rate**:
-- Unity analizza frequenze audio
-- Riduce automaticamente sample rate se possibile (es. 44.1 kHz → 22 kHz)
-- Risparmio 50% memoria senza perdita qualità percepibile
+- Unity analyzes audio frequencies
+- Automatically reduces sample rate when possible (eg. 44.1 kHz → 22 kHz)
+- 50% memory saving with no perceptible quality loss
 
-### Performance Target Raggiunti
+### Performance Targets Achieved
 ```
-Memory (Idle): ~2 MB   (target: <5 MB)  ✅
-Memory (Playing): ~5 MB  (target: <10 MB) ✅
-CPU Audio: <1 ms/frame  (target: <2 ms)  ✅
-Disk Size: ~15 MB       (target: <50 MB) ✅
-Load Time: <20 ms       (target: <50 ms) ✅
+Memory (Idle): ~2 MB   (target: <5 MB)  OK
+Memory (Playing): ~5 MB  (target: <10 MB) OK
+CPU Audio: <1 ms/frame  (target: <2 ms)  OK
+Disk Size: ~15 MB       (target: <50 MB) OK
+Load Time: <20 ms       (target: <50 ms) OK
 ```
 
-### Come Applicare Ottimizzazioni
+### How Optimizations Are Applied
 
-Unity auto-applica **import settings** in base alla cartella del file:
-- File in `Audio/Voice/` → ADPCM, Mono, Optimize
-- File in `Audio/SFX/` → ADPCM, Mono, Optimize
-- File in `Audio/Ambience/` → Vorbis 70%, Streaming, Stereo
+Unity automatically applies **import settings** based on the file's folder:
+- Files in `Audio/Voice/` → ADPCM, Mono, Optimize
+- Files in `Audio/SFX/` → ADPCM, Mono, Optimize
+- Files in `Audio/Ambience/` → Vorbis 70%, Streaming, Stereo
 
-**Nessun setup manuale richiesto** (gestito da AudioImportProcessor script).
+**No manual setup required** (managed by the AudioImportProcessor script).
 
 ---
 
-**Versione Documento**: 2.2 (Aprile 2026)  
-**Architettura**: Event Channels + Audio Libraries (ScriptableObject) + Type-Safe Enums  
-**Ultima Modifica**: 06 Aprile 2026  
-**Versione Build**: 0.8 (Refactoring C# Types)
-```
-
+**Document Version**: 2.2 (April 2026)  
+**Architecture**: Event Channels + Audio Libraries (ScriptableObject) + Type-Safe Enums  
+**Last Modified**: April 6, 2026  
+**Build Version**: 0.8 (C# Types Refactoring)
