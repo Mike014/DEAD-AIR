@@ -172,6 +172,7 @@ MonoBehaviour:
   _ambienceSource: {fileID: 1762289053}
   _musicSource: {fileID: 0}
   _videoSource: {fileID: 0}
+  _fadeSystem: {fileID: 547466893}
   _sfxLibraries:
   - {fileID: 11400000, guid: 2440609ddec0f27498ac24f8f4f42939, type: 2}
   _ambienceLibraries:
@@ -267,6 +268,7 @@ GameObject:
   m_Component:
   - component: {fileID: 547466891}
   - component: {fileID: 547466892}
+  - component: {fileID: 547466893}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -299,6 +301,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a9efe29cf0e601c4d902355a503af0c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &547466893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 547466890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03a3deac4b0efad42aacaee1c3b6bba2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &650215899
@@ -724,11 +738,13 @@ MonoBehaviour:
   _voiceSource: {fileID: 1448630985}
   _voiceLibraries:
   - {fileID: 11400000, guid: 9c809617f3942eb49b9076d2aca72519, type: 2}
-  _voiceVolume: 1
+  _voiceVolume: 0.956
+  _voiceFadeDuration: 0.14
   voiceRequestedChannel: {fileID: 11400000, guid: e8ff720647b6ccb499615a2f948aa24c, type: 2}
   voiceStopChannel: {fileID: 11400000, guid: 5aa7745cde05ef44494dba16f7ee503e, type: 2}
   voiceStartedChannel: {fileID: 11400000, guid: 05b1bee3d21d57949825d811c2c52b81, type: 2}
   voiceFinishedChannel: {fileID: 11400000, guid: 79616d30fb2b7a447800d44a3677efe4, type: 2}
+  _fadeSystem: {fileID: 547466893}
 --- !u!1 &842420229
 GameObject:
   m_ObjectHideFlags: 0
