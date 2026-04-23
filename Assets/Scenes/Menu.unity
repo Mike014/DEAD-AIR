@@ -267,6 +267,7 @@ MonoBehaviour:
   _ambienceSource: {fileID: 1941921393}
   _musicSource: {fileID: 1135904893}
   _videoSource: {fileID: 1123261681}
+  _fadeSystem: {fileID: 0}
   _sfxLibraries: []
   _ambienceLibraries: []
   _sfxVolume: 0.7
@@ -1917,9 +1918,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1599089225}
-        m_TargetAssemblyTypeName: MenuButtons, Assembly-CSharp
-        m_MethodName: OnStartGameClicked
+      - m_Target: {fileID: 1599089226}
+        m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
+        m_MethodName: LoadDemo
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

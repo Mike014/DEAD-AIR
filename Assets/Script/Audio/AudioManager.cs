@@ -13,52 +13,53 @@ namespace DeadAir.Audio
         // ============================================
         // SINGLETON
         // ============================================
-        
+
         public static AudioManager Instance { get; private set; }
-        
+
         // ============================================
         // SERIALIZED FIELDS
         // ============================================
-        
+
         [Header("Audio Sources")]
         [SerializeField] private AudioSource _sfxSource;
         [SerializeField] private AudioSource _ambienceSource;
         [SerializeField] private AudioSource _musicSource;
         [SerializeField] private AudioSource _videoSource;
-        
+        [SerializeField] private FadeSystem _fadeSystem;
+
         [Header("Audio Libraries (ScriptableObject)")]
         [Tooltip("Libraries SFX da caricare per questa scena")]
         [SerializeField] private AudioClipLibrary[] _sfxLibraries;
-        
+
         [Tooltip("Libraries Ambience da caricare per questa scena")]
         [SerializeField] private AudioClipLibrary[] _ambienceLibraries;
-        
+
         [Header("Settings")]
-        [SerializeField] [Range(0f, 1f)] private float _sfxVolume = 1f;
-        [SerializeField] [Range(0f, 1f)] private float _ambienceVolume = 0.5f;
+        [SerializeField][Range(0f, 1f)] private float _sfxVolume = 1f;
+        [SerializeField][Range(0f, 1f)] private float _ambienceVolume = 0.5f;
         [SerializeField] private float _ambienceFadeDuration = 1f;
-        
+
         // ============================================
         // EVENT CHANNELS
         // ============================================
-        
+
         [Header("Audio Event Channels (Observer)")]
         [SerializeField] private StringEventChannel sfxRequestedChannel;
         [SerializeField] private StringEventChannel ambienceStartChannel;
         [SerializeField] private VoidEventChannel ambienceStopChannel;
-        
+
         // ============================================
         // PRIVATE STATE
         // ============================================
-        
+
         private Dictionary<string, AudioClip> _sfxLookup;
         private Dictionary<string, AudioClip> _ambienceLookup;
         private Coroutine _ambienceFadeCoroutine;
-        
+
         // ============================================
         // UNITY LIFECYCLE
         // ============================================
-        
+
         private void Awake()
         {
             // Singleton setup
@@ -72,36 +73,36 @@ namespace DeadAir.Audio
                 Destroy(gameObject);
                 return;
             }
-            
+
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            
+
             ConfigureAudioSources();
             BuildLookupTables();
         }
-        
+
         private void OnEnable()
         {
             SubscribeToChannels();
         }
-        
+
         private void OnDisable()
         {
             UnsubscribeFromChannels();
         }
-        
+
         // ============================================
         // INITIALIZATION
         // ============================================
-        
+
         private void BuildLookupTables()
         {
             _sfxLookup = new Dictionary<string, AudioClip>();
             _ambienceLookup = new Dictionary<string, AudioClip>();
-            
+
             LoadLibraries();
         }
-        
+
         /// <summary>
         /// Carica tutte le libraries assegnate nell'Inspector.
         /// </summary>
@@ -118,7 +119,7 @@ namespace DeadAir.Audio
                     }
                 }
             }
-            
+
             // Load Ambience libraries
             if (_ambienceLibraries != null)
             {
@@ -130,31 +131,31 @@ namespace DeadAir.Audio
                     }
                 }
             }
-            
+
             Debug.Log($"[AudioManager] Totale caricato: {_sfxLookup.Count} SFX, {_ambienceLookup.Count} Ambience");
         }
-        
+
         /// <summary>
         /// Ricarica le libraries (chiamato quando cambia scena).
         /// </summary>
         public void ReloadLibraries(AudioClipLibrary[] sfxLibraries, AudioClipLibrary[] ambienceLibraries)
         {
             Debug.Log("[AudioManager] Reload libraries per nuova scena...");
-            
+
             // Clear dictionaries esistenti
             _sfxLookup?.Clear();
             _ambienceLookup?.Clear();
-            
+
             if (_sfxLookup == null) _sfxLookup = new Dictionary<string, AudioClip>();
             if (_ambienceLookup == null) _ambienceLookup = new Dictionary<string, AudioClip>();
-            
+
             // Load nuove libraries
             _sfxLibraries = sfxLibraries;
             _ambienceLibraries = ambienceLibraries;
-            
+
             LoadLibraries();
         }
-        
+
         /// <summary>
         /// Reassegna i channels (chiamato quando cambia scena).
         /// </summary>
@@ -165,42 +166,42 @@ namespace DeadAir.Audio
         {
             // Unsubscribe vecchi channels
             UnsubscribeFromChannels();
-            
+
             // Assegna nuovi channels
             sfxRequestedChannel = sfx;
             ambienceStartChannel = ambienceStart;
             ambienceStopChannel = ambienceStop;
-            
+
             // Subscribe nuovi channels
             SubscribeToChannels();
-            
+
             Debug.Log("[AudioManager] Channels reassegnati");
         }
-        
+
         private void SubscribeToChannels()
         {
             if (sfxRequestedChannel != null)
                 sfxRequestedChannel.Subscribe(PlaySFX);
-            
+
             if (ambienceStartChannel != null)
                 ambienceStartChannel.Subscribe(StartAmbience);
-            
+
             if (ambienceStopChannel != null)
                 ambienceStopChannel.Subscribe(StopAmbience);
         }
-        
+
         private void UnsubscribeFromChannels()
         {
             if (sfxRequestedChannel != null)
                 sfxRequestedChannel.Unsubscribe(PlaySFX);
-            
+
             if (ambienceStartChannel != null)
                 ambienceStartChannel.Unsubscribe(StartAmbience);
-            
+
             if (ambienceStopChannel != null)
                 ambienceStopChannel.Unsubscribe(StopAmbience);
         }
-        
+
         private void ConfigureAudioSources()
         {
             if (_sfxSource != null)
@@ -208,7 +209,7 @@ namespace DeadAir.Audio
                 _sfxSource.playOnAwake = false;
                 _sfxSource.loop = false;
             }
-            
+
             if (_ambienceSource != null)
             {
                 _ambienceSource.playOnAwake = false;
@@ -216,11 +217,11 @@ namespace DeadAir.Audio
                 _ambienceSource.volume = _ambienceVolume;
             }
         }
-        
+
         // ============================================
         // SFX
         // ============================================
-        
+
         public void PlaySFX(string sfxId)
         {
             if (string.IsNullOrEmpty(sfxId) || _sfxSource == null)
@@ -236,7 +237,7 @@ namespace DeadAir.Audio
                     _sfxSource.volume = _sfxVolume;
                     _sfxSource.loop = true;
                     _sfxSource.Play();
-                    
+
                     Debug.Log($"[AudioManager] SFX Looping: {sfxId}");
                 }
                 else
@@ -250,11 +251,11 @@ namespace DeadAir.Audio
                 Debug.LogWarning($"[AudioManager] SFX non trovato: {sfxId}");
             }
         }
-        
+
         // ============================================
         // AMBIENCE
         // ============================================
-        
+
         public void StartAmbience(string ambienceId)
         {
             if (string.IsNullOrEmpty(ambienceId) || _ambienceSource == null)
@@ -269,7 +270,7 @@ namespace DeadAir.Audio
 
                 _ambienceSource.clip = clip;
                 _ambienceSource.Play();
-                _ambienceFadeCoroutine = StartCoroutine(FadeAmbienceIn(0f, _ambienceVolume, _ambienceFadeDuration));
+                _ambienceFadeCoroutine = StartCoroutine(_fadeSystem.FadeIn(_ambienceSource, _ambienceVolume, _ambienceFadeDuration));
 
                 Debug.Log($"[AudioManager] Ambience START: {ambienceId}");
             }
@@ -278,7 +279,7 @@ namespace DeadAir.Audio
                 Debug.LogWarning($"[AudioManager] Ambience non trovata: {ambienceId}");
             }
         }
-        
+
         public void StopAmbience()
         {
             if (_ambienceSource == null || !_ambienceSource.isPlaying)
@@ -287,52 +288,45 @@ namespace DeadAir.Audio
             if (_ambienceFadeCoroutine != null)
                 StopCoroutine(_ambienceFadeCoroutine);
 
-            _ambienceFadeCoroutine = StartCoroutine(FadeAmbienceAndStop(_ambienceSource.volume, 0f, _ambienceFadeDuration));
+            _ambienceFadeCoroutine = StartCoroutine(_fadeSystem.FadeOut(_ambienceSource, _ambienceFadeDuration));
 
             Debug.Log("[AudioManager] Ambience STOP");
         }
-        
+
         // ============================================
         // COROUTINES (unchanged)
         // ============================================
-        
-        private System.Collections.IEnumerator FadeAmbienceIn(float from, float to, float duration)
-        {
-            yield return FadeAmbience(from, to, duration);
-            _ambienceFadeCoroutine = null;
-        }
 
-        private System.Collections.IEnumerator FadeAmbience(float from, float to, float duration)
-        {
-            float elapsed = 0f;
-            _ambienceSource.volume = from;
+        // private System.Collections.IEnumerator FadeAmbienceIn(float from, float to, float duration)
+        // {
+        //     yield return FadeAmbience(from, to, duration);
+        //     _ambienceFadeCoroutine = null;
+        // }
 
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                _ambienceSource.volume = Mathf.Lerp(from, to, elapsed / duration);
-                yield return null;
-            }
+        // private System.Collections.IEnumerator FadeAmbience(float from, float to, float duration)
+        // {
+        //     float elapsed = 0f;
+        //     _ambienceSource.volume = from;
 
-            _ambienceSource.volume = to;
-        }
+        //     while (elapsed < duration)
+        //     {
+        //         elapsed += Time.deltaTime;
+        //         _ambienceSource.volume = Mathf.Lerp(from, to, elapsed / duration);
+        //         yield return null;
+        //     }
 
-        private System.Collections.IEnumerator FadeAmbienceAndStop(float from, float to, float duration)
-        {
-            yield return FadeAmbience(from, to, duration);
-            _ambienceSource.Stop();
-            _ambienceFadeCoroutine = null;
-        }
-        
+        //     _ambienceSource.volume = to;
+        // }
+
         // ============================================
         // PUBLIC API (unchanged)
         // ============================================
-        
+
         public void SetSFXVolume(float volume)
         {
             _sfxVolume = Mathf.Clamp01(volume);
         }
-        
+
         public void SetAmbienceVolume(float volume)
         {
             _ambienceVolume = Mathf.Clamp01(volume);
@@ -341,7 +335,7 @@ namespace DeadAir.Audio
                 _ambienceSource.volume = _ambienceVolume;
             }
         }
-        
+
         public void StopAll()
         {
             if (_ambienceFadeCoroutine != null)
