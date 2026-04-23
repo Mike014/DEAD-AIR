@@ -267,7 +267,7 @@ MonoBehaviour:
   _ambienceSource: {fileID: 1941921393}
   _musicSource: {fileID: 1135904893}
   _videoSource: {fileID: 1123261681}
-  _fadeSystem: {fileID: 0}
+  _fadeSystem: {fileID: 1599089227}
   _sfxLibraries: []
   _ambienceLibraries: []
   _sfxVolume: 0.7
@@ -1679,6 +1679,7 @@ GameObject:
   - component: {fileID: 1599089224}
   - component: {fileID: 1599089226}
   - component: {fileID: 1599089225}
+  - component: {fileID: 1599089227}
   m_Layer: 0
   m_Name: MenuController
   m_TagString: Untagged
@@ -1730,6 +1731,18 @@ MonoBehaviour:
   _startPanel: {fileID: 0}
   _optionsPanel: {fileID: 0}
   _creditsPanel: {fileID: 0}
+--- !u!114 &1599089227
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1599089223}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03a3deac4b0efad42aacaee1c3b6bba2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1609953673
 GameObject:
   m_ObjectHideFlags: 0
